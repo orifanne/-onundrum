@@ -37,9 +37,9 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	 */
 	private float[] mMVPMatrix = new float[16];
 	/** Store our model data in a float buffer. */
-	private final FloatBuffer mTriangle1Vertices;
-	private final FloatBuffer mTriangle2Vertices;
-	private final FloatBuffer mTriangle3Vertices;
+	private final FloatBuffer xAxisVertices;
+	private final FloatBuffer yAxisVertices;
+	private final FloatBuffer zAxisVertices;
 	/** This will be used to pass in the transformation matrix. */
 	private int mMVPMatrixHandle;
 	/** This will be used to pass in model position information. */
@@ -65,41 +65,44 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	 * Initialize the model data.
 	 */
 	public MyClassRenderer() {
-		// Define points for equilateral triangles.
-		// This triangle is red, green, and blue.
-		final float[] triangle1VerticesData = {
+		// Define points for lines.
+		// This line is red.
+		final float[] xAxisVerticesData = {
 				// X, Y, Z,
 				// R, G, B, A
-				-0.5f, -0.25f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.5f, -0.25f,
-				0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.559016994f, 0.0f, 0.0f,
-				1.0f, 0.0f, 1.0f };
-		// This triangle is yellow, cyan, and magenta.
-		final float[] triangle2VerticesData = {
+				0.0f, 0.0f, 0.0f, 
+				1.0f, 0.0f, 0.0f, 1.0f, 
+				10.0f, 0.0f, 0.0f, 
+				1.0f, 0.0f, 0.0f, 1.0f };
+		// This line is blue.
+		final float[] yAxisVerticesData = {
 				// X, Y, Z,
 				// R, G, B, A
-				-0.5f, -0.25f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.5f, -0.25f,
-				0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.559016994f, 0.0f, 1.0f,
-				0.0f, 1.0f, 1.0f };
-		// This triangle is white, gray, and black.
-		final float[] triangle3VerticesData = {
+				0.0f, 0.0f, 0.0f, 
+				0.0f, 0.0f, 1.0f, 1.0f, 
+				0.0f, 10.0f, 0.0f, 
+				0.0f, 0.0f, 1.0f, 1.0f };
+		// This line is green.
+		final float[] zAxisVerticesData = {
 				// X, Y, Z,
 				// R, G, B, A
-				-0.5f, -0.25f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.5f, -0.25f,
-				0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.559016994f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f };
+				0.0f, 0.0f, 0.0f, 
+				0.0f, 1.0f, 0.0f, 1.0f, 
+				0.0f, 0.0f, 10.0f,
+				0.0f, 1.0f, 0.0f, 1.0f };
 		// Initialize the buffers.
-		mTriangle1Vertices = ByteBuffer
-				.allocateDirect(triangle1VerticesData.length * mBytesPerFloat)
+		xAxisVertices = ByteBuffer
+				.allocateDirect(xAxisVerticesData.length * mBytesPerFloat)
 				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		mTriangle2Vertices = ByteBuffer
-				.allocateDirect(triangle2VerticesData.length * mBytesPerFloat)
+		yAxisVertices = ByteBuffer
+				.allocateDirect(yAxisVerticesData.length * mBytesPerFloat)
 				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		mTriangle3Vertices = ByteBuffer
-				.allocateDirect(triangle3VerticesData.length * mBytesPerFloat)
+		zAxisVertices = ByteBuffer
+				.allocateDirect(zAxisVerticesData.length * mBytesPerFloat)
 				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		mTriangle1Vertices.put(triangle1VerticesData).position(0);
-		mTriangle2Vertices.put(triangle2VerticesData).position(0);
-		mTriangle3Vertices.put(triangle3VerticesData).position(0);
+		xAxisVertices.put(xAxisVerticesData).position(0);
+		yAxisVertices.put(yAxisVerticesData).position(0);
+		zAxisVertices.put(zAxisVerticesData).position(0);
 	}
 
 	@Override
@@ -247,9 +250,15 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	public void onDrawFrame(GL10 glUnused) {
 
 		// Position the eye behind the origin.
-		final float eyeX = (float) (Math.cos(MainActivity.rotationCurrent[0]) * lookDistance);
-		final float eyeY = (float) (Math.cos(MainActivity.rotationCurrent[1]) * lookDistance);
-		final float eyeZ = (float) (Math.cos(MainActivity.rotationCurrent[2]) * lookDistance);
+		float xProjection = (float) Math.cos(Math.abs(MainActivity.rotationCurrent[1]));
+		float yProjection = (float) Math.cos(Math.abs(MainActivity.rotationCurrent[2]));
+		if (MainActivity.rotationCurrent[1] < 0)
+			xProjection *= -1;
+		if (MainActivity.rotationCurrent[2] < 0)
+			yProjection *= -1;
+		final float eyeX = xProjection * lookDistance;
+		final float eyeY = yProjection * lookDistance;
+		final float eyeZ = (float) (Math.cos(0) * lookDistance);
 		// We are looking toward the distance
 		final float lookX = 0.0f;
 		final float lookY = 0.0f;
@@ -269,35 +278,22 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				lookZ, upX, upY, upZ);
 
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
-		// Do a complete rotation every 10 seconds.
-		long time = SystemClock.uptimeMillis() % 10000L;
-		float angleInDegrees = (360.0f / 10000.0f) * ((int) time);
-		// Draw the triangle facing straight on.
+
+		
+		
 		Matrix.setIdentityM(mModelMatrix, 0);
-		Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 0.0f, 0.0f, 1.0f);
-		drawTriangle(mTriangle1Vertices);
-		// Draw one translated a bit down and rotated to be flat on the ground.
-		Matrix.setIdentityM(mModelMatrix, 0);
-		Matrix.translateM(mModelMatrix, 0, 0.0f, -1.0f, 0.0f);
-		Matrix.rotateM(mModelMatrix, 0, 90.0f, 1.0f, 0.0f, 0.0f);
-		Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 0.0f, 0.0f, 1.0f);
-		drawTriangle(mTriangle2Vertices);
-		// Draw one translated a bit to the right and rotated to be facing to
-		// the left.
-		Matrix.setIdentityM(mModelMatrix, 0);
-		Matrix.translateM(mModelMatrix, 0, 1.0f, 0.0f, 0.0f);
-		Matrix.rotateM(mModelMatrix, 0, 90.0f, 0.0f, 1.0f, 0.0f);
-		Matrix.rotateM(mModelMatrix, 0, angleInDegrees, 0.0f, 0.0f, 1.0f);
-		drawTriangle(mTriangle3Vertices);
+		drawAxis(xAxisVertices);
+		drawAxis(yAxisVertices);
+		drawAxis(zAxisVertices);
 	}
 
 	/**
-	 * Draws a triangle from the given vertex data.
+	 * Draws a line from the given vertex data.
 	 * 
 	 * @param aTriangleBuffer
 	 *            The buffer containing the vertex data.
 	 */
-	private void drawTriangle(final FloatBuffer aTriangleBuffer) {
+	private void drawAxis(final FloatBuffer aTriangleBuffer) {
 		// Pass in the position information
 		aTriangleBuffer.position(mPositionOffset);
 		GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize,
@@ -317,6 +313,6 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		// (which now contains model * view * projection).
 		Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 3);
+		GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
 	}
 }

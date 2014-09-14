@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
 	Sensor sensorAccel;
 	Sensor sensorLinAccel;
 	Sensor sensorGravity;
-	Sensor sensorGyr;
+	Sensor sensorMagnet;
 
 	StringBuilder sb = new StringBuilder();
 
@@ -34,13 +34,10 @@ public class MainActivity extends Activity {
 	float[] valuesAccel = new float[3];
 	float[] valuesLinAccel = new float[3];
 	float[] valuesGravity = new float[3];
-	float[] valuesGyr = new float[3];
+	float[] valuesMagnet = new float[3];
 
-	private static final float NS2S = 1.0f / 1000000000.0f;
-	private static final float EPSILON = 1.0f / 1000000000.0f;
-	private final float[] deltaRotationVector = new float[4];
-	private float timestamp;
-	float[] deltaRotationMatrix = new float[9];
+	float[] r = new float[9];
+
 	public static float[] rotationCurrent = new float[3];
 
 	// создадим ссылку на экземпляр нашего класса MyClassSurfaceView
@@ -49,6 +46,14 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		sensorLinAccel = sensorManager
+				.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+		sensorGravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+		sensorMagnet = sensorManager
+				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
 		mGLSurfaceView = new GLSurfaceView(this);
 
@@ -72,13 +77,6 @@ public class MainActivity extends Activity {
 		}
 
 		setContentView(mGLSurfaceView);
-
-		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		sensorLinAccel = sensorManager
-				.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-		sensorGravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-		sensorGyr = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 	}
 
 	@Override
@@ -111,7 +109,7 @@ public class MainActivity extends Activity {
 				SensorManager.SENSOR_DELAY_NORMAL);
 		sensorManager.registerListener(listener, sensorGravity,
 				SensorManager.SENSOR_DELAY_NORMAL);
-		sensorManager.registerListener(listener, sensorGyr,
+		sensorManager.registerListener(listener, sensorMagnet,
 				SensorManager.SENSOR_DELAY_NORMAL);
 
 		timer = new Timer();
@@ -121,12 +119,22 @@ public class MainActivity extends Activity {
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						// showInfo();
+						getDeviceOrientation();
 					}
 				});
 			}
 		};
 		timer.schedule(task, 0, 400);
+	}
+	
+	void getDeviceOrientation() {
+		SensorManager.getRotationMatrix(r, null, valuesAccel, valuesMagnet);
+		SensorManager.getOrientation(r, rotationCurrent);
+
+		rotationCurrent[0] = (float) Math.toDegrees(rotationCurrent[0]);
+		rotationCurrent[1] = (float) Math.toDegrees(rotationCurrent[1]);
+		rotationCurrent[2] = (float) Math.toDegrees(rotationCurrent[2]);
+		return;
 	}
 
 	@Override
@@ -147,7 +155,7 @@ public class MainActivity extends Activity {
 		sb.append("Accelerometer: " + format(valuesAccel))
 				.append("\n\nLin accel : " + format(valuesLinAccel))
 				.append("\nGravity : " + format(valuesGravity))
-				.append("\n\nGyroscope : " + format(valuesGyr));
+				.append("\n\nMagnetic : " + format(valuesMagnet));
 		tvText.setText(sb);
 	}
 
@@ -175,68 +183,10 @@ public class MainActivity extends Activity {
 					valuesGravity[i] = event.values[i];
 				}
 				break;
-			case Sensor.TYPE_GYROSCOPE:
-				for (int i = 0; i < 3; i++) {
-					valuesGyr[i] = event.values[i];
-				}
-
-				// This timestep's delta rotation to be multiplied by the
-				// current rotation
-				// after computing it from the gyro sample data.
-				if (timestamp != 0) {
-					final float dT = (event.timestamp - timestamp) * NS2S;
-					// Axis of the rotation sample, not normalized yet.
-					float axisX = event.values[0];
-					float axisY = event.values[1];
-					float axisZ = event.values[2];
-
-					// Calculate the angular speed of the sample
-					float omegaMagnitude = (float) Math.sqrt(axisX * axisX
-							+ axisY * axisY + axisZ * axisZ);
-
-					// Normalize the rotation vector if it's big enough to get
-					// the axis
-					if (omegaMagnitude > EPSILON) {
-						axisX /= omegaMagnitude;
-						axisY /= omegaMagnitude;
-						axisZ /= omegaMagnitude;
-					}
-
-					// Integrate around this axis with the angular speed by the
-					// timestep
-					// in order to get a delta rotation from this sample over
-					// the timestep
-					// We will convert this axis-angle representation of the
-					// delta rotation
-					// into a quaternion before turning it into the rotation
-					// matrix.
-					float thetaOverTwo = omegaMagnitude * dT / 2.0f;
-					float sinThetaOverTwo = (float) Math.sin(thetaOverTwo);
-					float cosThetaOverTwo = (float) Math.cos(thetaOverTwo);
-					deltaRotationVector[0] = sinThetaOverTwo * axisX;
-					deltaRotationVector[1] = sinThetaOverTwo * axisY;
-					deltaRotationVector[2] = sinThetaOverTwo * axisZ;
-					deltaRotationVector[3] = cosThetaOverTwo;
-				}
-				timestamp = event.timestamp;
-				float[] deltaRotationMatrix = new float[9];
-				SensorManager.getRotationMatrixFromVector(deltaRotationMatrix,
-						deltaRotationVector);
-				// User code should concatenate the delta rotation we computed
-				// with the current rotation
-				// in order to get the updated rotation.
-				float[] k = new float[3];
-
-				k[0] = rotationCurrent[0] * deltaRotationMatrix[0]
-						+ rotationCurrent[1] * deltaRotationMatrix[3]
-						+ rotationCurrent[2] * deltaRotationMatrix[6];
-				k[1] = rotationCurrent[0] * deltaRotationMatrix[1]
-						+ rotationCurrent[1] * deltaRotationMatrix[4]
-						+ rotationCurrent[2] * deltaRotationMatrix[7];
-				k[2] = rotationCurrent[0] * deltaRotationMatrix[2]
-						+ rotationCurrent[1] * deltaRotationMatrix[5]
-						+ rotationCurrent[2] * deltaRotationMatrix[8];
-				rotationCurrent = k;
+			case Sensor.TYPE_MAGNETIC_FIELD:
+		        for (int i=0; i < 3; i++){
+		          valuesMagnet[i] = event.values[i];
+		        }  
 				break;
 			}
 
