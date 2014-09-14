@@ -70,25 +70,19 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		final float[] xAxisVerticesData = {
 				// X, Y, Z,
 				// R, G, B, A
-				0.0f, 0.0f, 0.0f, 
-				1.0f, 0.0f, 0.0f, 1.0f, 
-				10.0f, 0.0f, 0.0f, 
+				0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 10.0f, 0.0f, 0.0f,
 				1.0f, 0.0f, 0.0f, 1.0f };
 		// This line is blue.
 		final float[] yAxisVerticesData = {
 				// X, Y, Z,
 				// R, G, B, A
-				0.0f, 0.0f, 0.0f, 
-				0.0f, 0.0f, 1.0f, 1.0f, 
-				0.0f, 10.0f, 0.0f, 
+				0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 10.0f, 0.0f,
 				0.0f, 0.0f, 1.0f, 1.0f };
 		// This line is green.
 		final float[] zAxisVerticesData = {
 				// X, Y, Z,
 				// R, G, B, A
-				0.0f, 0.0f, 0.0f, 
-				0.0f, 1.0f, 0.0f, 1.0f, 
-				0.0f, 0.0f, 10.0f,
+				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
 				0.0f, 1.0f, 0.0f, 1.0f };
 		// Initialize the buffers.
 		xAxisVertices = ByteBuffer
@@ -250,15 +244,15 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	public void onDrawFrame(GL10 glUnused) {
 
 		// Position the eye behind the origin.
-		float xProjection = (float) Math.cos(Math.abs(MainActivity.rotationCurrent[1]));
-		float yProjection = (float) Math.cos(Math.abs(MainActivity.rotationCurrent[2]));
-		if (MainActivity.rotationCurrent[1] < 0)
-			xProjection *= -1;
-		if (MainActivity.rotationCurrent[2] < 0)
-			yProjection *= -1;
-		final float eyeX = xProjection * lookDistance;
-		final float eyeY = yProjection * lookDistance;
-		final float eyeZ = (float) (Math.cos(0) * lookDistance);
+		float yProjection = (float) Math
+				.cos(90 - MainActivity.rotationCurrent[1]) * lookDistance;
+		float xProjection = (float) Math
+				.cos(90 - MainActivity.rotationCurrent[2]) * lookDistance;
+		float zProjection = (float) Math.sqrt(lookDistance * lookDistance
+				- (xProjection * xProjection + yProjection * yProjection));
+		final float eyeX = xProjection;
+		final float eyeY = yProjection;
+		final float eyeZ = zProjection;
 		// We are looking toward the distance
 		final float lookX = 0.0f;
 		final float lookY = 0.0f;
@@ -279,8 +273,6 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
-		
-		
 		Matrix.setIdentityM(mModelMatrix, 0);
 		drawAxis(xAxisVertices);
 		drawAxis(yAxisVertices);
