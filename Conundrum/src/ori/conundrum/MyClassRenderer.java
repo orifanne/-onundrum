@@ -244,15 +244,14 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	public void onDrawFrame(GL10 glUnused) {
 
 		// Position the eye behind the origin.
-		float yProjection = (float) Math
-				.cos(90 - MainActivity.rotationCurrent[1]) * lookDistance;
-		float xProjection = (float) Math
-				.cos(90 - MainActivity.rotationCurrent[2]) * lookDistance;
-		float zProjection = (float) Math.sqrt(lookDistance * lookDistance
-				- (xProjection * xProjection + yProjection * yProjection));
-		final float eyeX = xProjection;
-		final float eyeY = yProjection;
-		final float eyeZ = zProjection;
+		final float eyeX = (float) Math.cos(Math.PI * 0.5
+				- MainActivity.rotationCurrent[2])
+				* lookDistance;
+		final float eyeY = (float) Math.cos(Math.PI * 0.5
+				- MainActivity.rotationCurrent[1])
+				* lookDistance;
+		final float eyeZ = (float) Math.sqrt(lookDistance * lookDistance
+				- (eyeX * eyeX + eyeY * eyeY));
 		// We are looking toward the distance
 		final float lookX = 0.0f;
 		final float lookY = 0.0f;

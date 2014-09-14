@@ -130,10 +130,6 @@ public class MainActivity extends Activity {
 	void getDeviceOrientation() {
 		SensorManager.getRotationMatrix(r, null, valuesAccel, valuesMagnet);
 		SensorManager.getOrientation(r, rotationCurrent);
-
-		rotationCurrent[0] = (float) Math.toDegrees(rotationCurrent[0]);
-		rotationCurrent[1] = (float) Math.toDegrees(rotationCurrent[1]);
-		rotationCurrent[2] = (float) Math.toDegrees(rotationCurrent[2]);
 		return;
 	}
 
