@@ -3,7 +3,6 @@ package ori.conundrum;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -124,12 +123,14 @@ public class MainActivity extends Activity {
 				});
 			}
 		};
-		timer.schedule(task, 0, 400);
+		timer.schedule(task, 0, 60);
 	}
 	
 	void getDeviceOrientation() {
 		SensorManager.getRotationMatrix(r, null, valuesAccel, valuesMagnet);
 		SensorManager.getOrientation(r, rotationCurrent);
+		rotationCurrent[0] *= -1;
+		rotationCurrent[1] *= -1;
 		return;
 	}
 
