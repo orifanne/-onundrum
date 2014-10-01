@@ -1,6 +1,7 @@
 package ori.conundrum;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Представляет игровой объект - единицу, имеющую набор 3d-моделей и координаты.
@@ -13,9 +14,7 @@ public abstract class GameObject {
 	/**
 	 * Координаты.
 	 */
-	private float x = 0;
-	private float y = 0;
-	private float z = 0;
+	private Coords coords;
 
 	/**
 	 * Признак видимости.
@@ -23,28 +22,27 @@ public abstract class GameObject {
 	private boolean isVisible = true;
 
 	/**
-	 * Набор 3d-моделей.
+	 * Набор 3d-моделей с координатами.
 	 */
-	private ArrayList<Model3D> models;
+	private ArrayList<HashMap<Model3D, ArrayList<Coords>>> models;
 
 	
 	
-	public GameObject(float x, float y, float z, ArrayList<Model3D> models) {
+	public GameObject(Coords coords,
+			ArrayList<HashMap<Model3D, ArrayList<Coords>>> models) {
 		super();
-		this.x = x;
-		this.y = y;
-		this.z = z;
+		this.coords = coords;
 		this.models = models;
 	}
-	
+
 	
 	
 	/**
 	 * Отрисовать объект.
 	 */
 	public abstract void draw();
-	
 
+	
 	
 	public boolean isVisible() {
 		return isVisible;
@@ -54,21 +52,12 @@ public abstract class GameObject {
 		this.isVisible = isVisible;
 	}
 
-	public float getX() {
-		return x;
+	public Coords getCoords() {
+		return coords;
 	}
 
-	public float getY() {
-		return y;
+	public void setCoords(Coords coords) {
+		this.coords = coords;
 	}
 
-	public float getZ() {
-		return z;
-	}
-
-	public void setPosition(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
 }
