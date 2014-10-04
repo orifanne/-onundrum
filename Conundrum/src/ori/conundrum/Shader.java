@@ -77,6 +77,30 @@ public class Shader {
 	}
 
 	/**
+	 * Устанавливает связь между униформой шейдера u_texture и текстурой
+	 * 
+	 * @param texture
+	 *            текстура
+	 */
+	public void linkTexture(Texture texture) {
+		// устанавливаем текущую активную программу
+		GLES20.glUseProgram(programHandle);
+		if (texture != null) {
+			// получаем ссылку на униформу u_texture
+			int u_texture_Handle = GLES20.glGetUniformLocation(programHandle,
+					"u_texture");
+			// выбираем текущий текстурный блок GL_TEXTURE0
+			GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+			// в текстурном блоке GL_TEXTURE0
+			// делаем активной текстуру с именем texture.getName()
+			GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getName());
+			// выполняем связь между объектом texture и униформой u_texture
+			// в нулевом текстурном блоке
+			GLES20.glUniform1i(u_texture_Handle, 0);
+		}
+	}
+
+	/**
 	 * Получает указатели.
 	 */
 	private void getHandles() {
