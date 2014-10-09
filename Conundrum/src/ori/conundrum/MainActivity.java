@@ -67,7 +67,7 @@ public class MainActivity extends Activity {
 			mGLSurfaceView.setEGLContextClientVersion(2);
 
 			// Устанавливаем рендеринг
-			mGLSurfaceView.setRenderer(new MyClassRenderer());
+			mGLSurfaceView.setRenderer(new MyClassRenderer(this.getBaseContext()));
 			mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 		} else {
 			// Устройство поддерживает только OpenGL ES 1.x

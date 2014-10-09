@@ -7,6 +7,7 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
@@ -36,67 +37,20 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	 * the shader program.
 	 */
 	private float[] mMVPMatrix = new float[16];
-	/** Store our model data in a float buffer. */
-	private final FloatBuffer xAxisVertices;
-	private final FloatBuffer yAxisVertices;
-	private final FloatBuffer zAxisVertices;
-	/** This will be used to pass in the transformation matrix. */
-	private int mMVPMatrixHandle;
-	/** This will be used to pass in model position information. */
-	private int mPositionHandle;
-	/** This will be used to pass in model color information. */
-	private int mColorHandle;
-	/** How many bytes per float. */
-	private final int mBytesPerFloat = 4;
-	/** How many elements per vertex. */
-	private final int mStrideBytes = 7 * mBytesPerFloat;
-	/** Offset of the position data. */
-	private final int mPositionOffset = 0;
-	/** Size of the position data in elements. */
-	private final int mPositionDataSize = 3;
-	/** Offset of the color data. */
-	private final int mColorOffset = 3;
-	/** Size of the color data in elements. */
-	private final int mColorDataSize = 4;
 
 	private final float lookDistance = 1.5f;
+
+	Model3D model;
+	Shader shader;
+	Texture texture;
+
+	Context context;
 
 	/**
 	 * Initialize the model data.
 	 */
-	public MyClassRenderer() {
-		// Define points for lines.
-		// This line is red.
-		final float[] xAxisVerticesData = {
-				// X, Y, Z,
-				// R, G, B, A
-				0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 10.0f, 0.0f, 0.0f,
-				1.0f, 0.0f, 0.0f, 1.0f };
-		// This line is blue.
-		final float[] yAxisVerticesData = {
-				// X, Y, Z,
-				// R, G, B, A
-				0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 10.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 1.0f };
-		// This line is green.
-		final float[] zAxisVerticesData = {
-				// X, Y, Z,
-				// R, G, B, A
-				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f,
-				0.0f, 1.0f, 0.0f, 1.0f };
-		// Initialize the buffers.
-		xAxisVertices = ByteBuffer
-				.allocateDirect(xAxisVerticesData.length * mBytesPerFloat)
-				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		yAxisVertices = ByteBuffer
-				.allocateDirect(yAxisVerticesData.length * mBytesPerFloat)
-				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		zAxisVertices = ByteBuffer
-				.allocateDirect(zAxisVerticesData.length * mBytesPerFloat)
-				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		xAxisVertices.put(xAxisVerticesData).position(0);
-		yAxisVertices.put(yAxisVerticesData).position(0);
-		zAxisVertices.put(zAxisVerticesData).position(0);
+	public MyClassRenderer(Context context) {
+		this.context = context;
 	}
 
 	@Override
@@ -113,20 +67,20 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				+ "attribute vec4 a_Position; \n" // Per-vertex position
 													// information we will pass
 													// in.
-				+ "attribute vec4 a_Color; \n" // Per-vertex color information
-												// we will pass in.
-				+ "varying vec4 v_Color; \n" // This will be passed into the
-												// fragment shader.
+				+ "attribute vec2 a_Texture; \n"
+				+ "varying vec2 v_Texture; \n"
+				+ "attribute vec3 a_Normal; \n"
+				+ "varying vec3 v_Normal; \n"
 				+ "void main() \n" // The entry point for our vertex shader.
-				+ "{ \n" + " v_Color = a_Color; \n" // Pass the color through to
-													// the fragment shader.
+				+ "{ \n"
 				// It will be interpolated across the triangle.
-				+ " gl_Position = u_MVPMatrix \n" // gl_Position is a special
+				+ " gl_Position = u_MVPMatrix" // gl_Position is a special
 													// variable used to store
 													// the final position.
 				+ " * a_Position; \n" // Multiply the vertex by the matrix to
 										// get the final point in
-				+ "} \n"; // normalized screen coordinates.
+				+ "v_Texture = a_Texture; \n" + "} \n"; // normalized screen
+														// coordinates.
 		final String fragmentShader = "precision mediump float; \n" // Set the
 																	// default
 																	// precision
@@ -136,90 +90,28 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 																	// need as
 																	// high of a
 				// precision in the fragment shader.
-				+ "varying vec4 v_Color; \n" // This is the color from the
-												// vertex shader interpolated
-												// across the
-				// triangle per fragment.
+				+ "varying vec2 v_Texture; \n"
+				+ "uniform sampler2D u_Texture;\n"
 				+ "void main() \n" // The entry point for our fragment shader.
-				+ "{ \n" + " gl_FragColor = v_Color; \n" // Pass the color
-															// directly through
-															// the pipeline.
+				+ "{ \n"
+				+ "vec4 textureColor = texture2D(u_Texture, v_Texture); \n"
+
+				+ "gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); \n" // Pass the color
+														// directly through
+														// the pipeline.
 				+ "} \n";
-		// Load in the vertex shader.
-		int vertexShaderHandle = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
-		if (vertexShaderHandle != 0) {
-			// Pass in the shader source.
-			GLES20.glShaderSource(vertexShaderHandle, vertexShader);
-			// Compile the shader.
-			GLES20.glCompileShader(vertexShaderHandle);
-			// Get the compilation status.
-			final int[] compileStatus = new int[1];
-			GLES20.glGetShaderiv(vertexShaderHandle, GLES20.GL_COMPILE_STATUS,
-					compileStatus, 0);
-			// If the compilation failed, delete the shader.
-			if (compileStatus[0] == 0) {
-				GLES20.glDeleteShader(vertexShaderHandle);
-				vertexShaderHandle = 0;
-			}
-		}
-		if (vertexShaderHandle == 0) {
-			throw new RuntimeException("Error creating vertex shader.");
-		}
-		// Load in the fragment shader shader.
-		int fragmentShaderHandle = GLES20
-				.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
-		if (fragmentShaderHandle != 0) {
-			// Pass in the shader source.
-			GLES20.glShaderSource(fragmentShaderHandle, fragmentShader);
-			// Compile the shader.
-			GLES20.glCompileShader(fragmentShaderHandle);
-			// Get the compilation status.
-			final int[] compileStatus = new int[1];
-			GLES20.glGetShaderiv(fragmentShaderHandle,
-					GLES20.GL_COMPILE_STATUS, compileStatus, 0);
-			// If the compilation failed, delete the shader.
-			if (compileStatus[0] == 0) {
-				GLES20.glDeleteShader(fragmentShaderHandle);
-				fragmentShaderHandle = 0;
-			}
-		}
-		if (fragmentShaderHandle == 0) {
-			throw new RuntimeException("Error creating fragment shader.");
-		}
-		// Create a program object and store the handle to it.
-		int programHandle = GLES20.glCreateProgram();
-		if (programHandle != 0) {
-			// Bind the vertex shader to the program.
-			GLES20.glAttachShader(programHandle, vertexShaderHandle);
-			// Bind the fragment shader to the program.
-			GLES20.glAttachShader(programHandle, fragmentShaderHandle);
-			// Bind attributes
-			GLES20.glBindAttribLocation(programHandle, 0, "a_Position");
-			GLES20.glBindAttribLocation(programHandle, 1, "a_Color");
-			// Link the two shaders together into a program.
-			GLES20.glLinkProgram(programHandle);
-			// Get the link status.
-			final int[] linkStatus = new int[1];
-			GLES20.glGetProgramiv(programHandle, GLES20.GL_LINK_STATUS,
-					linkStatus, 0);
-			// If the link failed, delete the program.
-			if (linkStatus[0] == 0) {
-				GLES20.glDeleteProgram(programHandle);
-				programHandle = 0;
-			}
-		}
-		if (programHandle == 0) {
-			throw new RuntimeException("Error creating program.");
-		}
-		// Set program handles. These will later be used to pass in values to
-		// the program.
-		mMVPMatrixHandle = GLES20.glGetUniformLocation(programHandle,
-				"u_MVPMatrix");
-		mPositionHandle = GLES20.glGetAttribLocation(programHandle,
-				"a_Position");
-		mColorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
-		// Tell OpenGL to use this program when rendering.
-		GLES20.glUseProgram(programHandle);
+
+		shader = new Shader(vertexShader, fragmentShader);
+		texture = new Texture(context, R.drawable.back);
+
+		float[] v = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 
+				      1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 
+				      1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 
+				      0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f };
+
+		byte[] i = { 2, 1, 0, 3, 2, 0 };
+
+		model = new Model3D(v, i, shader, texture);
 	}
 
 	@Override
@@ -273,28 +165,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
 		Matrix.setIdentityM(mModelMatrix, 0);
-		drawAxis(xAxisVertices);
-		drawAxis(yAxisVertices);
-		drawAxis(zAxisVertices);
-	}
 
-	/**
-	 * Draws a line from the given vertex data.
-	 * 
-	 * @param aTriangleBuffer
-	 *            The buffer containing the vertex data.
-	 */
-	private void drawAxis(final FloatBuffer aTriangleBuffer) {
-		// Pass in the position information
-		aTriangleBuffer.position(mPositionOffset);
-		GLES20.glVertexAttribPointer(mPositionHandle, mPositionDataSize,
-				GLES20.GL_FLOAT, false, mStrideBytes, aTriangleBuffer);
-		GLES20.glEnableVertexAttribArray(mPositionHandle);
-		// Pass in the color information
-		aTriangleBuffer.position(mColorOffset);
-		GLES20.glVertexAttribPointer(mColorHandle, mColorDataSize,
-				GLES20.GL_FLOAT, false, mStrideBytes, aTriangleBuffer);
-		GLES20.glEnableVertexAttribArray(mColorHandle);
 		// This multiplies the view matrix by the model matrix, and stores the
 		// result in the MVP matrix
 		// (which currently contains model * view).
@@ -303,7 +174,9 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		// stores the result in the MVP matrix
 		// (which now contains model * view * projection).
 		Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-		GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
-		GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2);
+		GLES20.glUniformMatrix4fv(shader.getMVPMatrixHandle(), 1, false,
+				mMVPMatrix, 0);
+
+		model.draw(new Coords(0, 0, 0));
 	}
 }
