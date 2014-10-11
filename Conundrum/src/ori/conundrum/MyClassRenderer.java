@@ -71,6 +71,8 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				+ "varying vec2 v_Texture; \n"
 				+ "attribute vec3 a_Normal; \n"
 				+ "varying vec3 v_Normal; \n"
+				+ "attribute vec4 a_Color; \n"
+				+ "varying vec4 v_Color; \n"
 				+ "void main() \n" // The entry point for our vertex shader.
 				+ "{ \n"
 				// It will be interpolated across the triangle.
@@ -96,7 +98,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				+ "{ \n"
 				+ "vec4 textureColor = texture2D(u_Texture, v_Texture); \n"
 
-				+ "gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); \n" // Pass the color
+				+ "gl_FragColor = textureColor; \n" // Pass the color
 														// directly through
 														// the pipeline.
 				+ "} \n";
@@ -104,12 +106,22 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		shader = new Shader(vertexShader, fragmentShader);
 		texture = new Texture(context, R.drawable.back);
 
-		float[] v = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 
-				      1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 
-				      1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 
-				      0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f };
+		float[] v = { 0.0f, 0.0f, 0.0f, 
+				      0.0f, 0.0f, 1.0f, 
+				      0.0f, 0.0f, 
+				      1.0f, 1.0f, 1.0f, 1.0f,
+				      
+				      1.0f, 0.0f, 0.0f, 
+				      0.0f, 0.0f, 1.0f, 
+				      1.0f, 0.0f, 
+				      1.0f, 1.0f, 1.0f, 1.0f,
+				      
+				      1.0f, 1.0f, 0.0f, 
+				      0.0f, 0.0f, 1.0f, 
+				      1.0f, 1.0f,
+				      1.0f, 1.0f, 1.0f, 1.0f};
 
-		byte[] i = { 2, 1, 0, 3, 2, 0 };
+		byte[] i = { 2, 1, 0 };
 
 		model = new Model3D(v, i, shader, texture);
 	}

@@ -18,6 +18,9 @@ public class Shader {
 
 	/** Ссылка на атрибут координат текстуры */
 	private int textureHandle;
+	
+	/** Ссылка на атрибут координат цвета */
+	private int colorHandle;
 
 	/**
 	 * @param vertexShaderCode
@@ -143,6 +146,7 @@ public class Shader {
 				.glGetAttribLocation(programHandle, "a_Position");
 		normalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
 		textureHandle = GLES20.glGetAttribLocation(programHandle, "a_Texture");
+		colorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
 	}
 
 	public int getMVPMatrixHandle() {
@@ -159,6 +163,10 @@ public class Shader {
 	
 	public int getTextureHandle() {
 		return textureHandle;
+	}
+	
+	public int getColorHandle() {
+		return colorHandle;
 	}
 	
 	public int getProgramHandle() {
