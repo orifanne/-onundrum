@@ -253,16 +253,25 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				* 0.5
 				+ (MainActivity.rotationCurrent[2] / Math
 						.abs(MainActivity.rotationCurrent[2]))
-				* Math.min(Math.abs(MainActivity.rotationCurrent[2] % Math.PI), angle))
+				* Math.min(Math.abs(Math.min(
+						Math.abs(MainActivity.rotationCurrent[2]), Math.PI
+								- Math.abs(MainActivity.rotationCurrent[2]))),
+						angle))
 				* lookDistance;
-		Log.d("ANGLE", "1: " + String.valueOf(MainActivity.rotationCurrent[2] % Math.PI));
+		Log.d("ANGLE",
+				"1: "
+						+ String.valueOf(MainActivity.rotationCurrent[2]
+								% Math.PI));
 		final float eyeY = (float) Math.cos(Math.PI
 				* 0.5
 				- (MainActivity.rotationCurrent[1] / Math
 						.abs(MainActivity.rotationCurrent[1]))
-				* Math.min(Math.abs(MainActivity.rotationCurrent[1] % Math.PI), angle))
+				* Math.min(Math.abs(MainActivity.rotationCurrent[1]), angle))
 				* lookDistance;
-		Log.d("ANGLE", "2: " + String.valueOf(MainActivity.rotationCurrent[1] % Math.PI));
+		Log.d("ANGLE",
+				"2: "
+						+ String.valueOf(MainActivity.rotationCurrent[1]
+								% Math.PI));
 		final float eyeZ = (float) Math.sqrt(lookDistance * lookDistance
 				- (eyeX * eyeX + eyeY * eyeY));
 		// We are looking toward the distance
