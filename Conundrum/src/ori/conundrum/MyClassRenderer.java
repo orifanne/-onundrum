@@ -12,8 +12,12 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.os.SystemClock;
+import android.util.Log;
 
 public class MyClassRenderer implements GLSurfaceView.Renderer {
+
+	private final float angle = (float) 0.25;
+
 	/**
 	 * Store the model matrix. This matrix is used to move models from object
 	 * space (where each model can be thought of being located at the center of
@@ -244,18 +248,27 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	public void onDrawFrame(GL10 glUnused) {
 
 		// Position the eye behind the origin.
-		final float eyeX = (float) Math.cos(Math.PI * 0.5
-				+ MainActivity.rotationCurrent[2])
+
+		final float eyeX = (float) Math.cos(Math.PI
+				* 0.5
+				+ (MainActivity.rotationCurrent[2] / Math
+						.abs(MainActivity.rotationCurrent[2]))
+				* Math.min(Math.abs(MainActivity.rotationCurrent[2] % Math.PI), angle))
 				* lookDistance;
-		final float eyeY = (float) Math.cos(Math.PI * 0.5
-				- MainActivity.rotationCurrent[1])
+		Log.d("ANGLE", "1: " + String.valueOf(MainActivity.rotationCurrent[2] % Math.PI));
+		final float eyeY = (float) Math.cos(Math.PI
+				* 0.5
+				- (MainActivity.rotationCurrent[1] / Math
+						.abs(MainActivity.rotationCurrent[1]))
+				* Math.min(Math.abs(MainActivity.rotationCurrent[1] % Math.PI), angle))
 				* lookDistance;
+		Log.d("ANGLE", "2: " + String.valueOf(MainActivity.rotationCurrent[1] % Math.PI));
 		final float eyeZ = (float) Math.sqrt(lookDistance * lookDistance
 				- (eyeX * eyeX + eyeY * eyeY));
 		// We are looking toward the distance
 		final float lookX = 0.0f;
 		final float lookY = 0.0f;
-		final float lookZ = -5.0f;
+		final float lookZ = 0.0f;
 		// Set our up vector. This is where our head would be pointing were we
 		// holding the camera.
 		final float upX = 0.0f;
