@@ -18,9 +18,12 @@ public class Shader {
 
 	/** Ссылка на атрибут координат текстуры */
 	private int textureHandle;
-	
+
 	/** Ссылка на атрибут координат цвета */
 	private int colorHandle;
+	
+	private int cameraHandle;
+	private int lightPositionHandle;
 
 	/**
 	 * @param vertexShaderCode
@@ -51,18 +54,18 @@ public class Shader {
 		GLES20.glShaderSource(vertexShader_Handle, vertexShaderCode);
 		// компилируем вершинный шейдер
 		GLES20.glCompileShader(vertexShader_Handle);
-		
+
 		// Получаем результат процесса компиляции
-	    final int[] compileStatus = new int[1];
-	    GLES20.glGetShaderiv(vertexShader_Handle, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
-	 
-	    // Если компиляция не удалась, удаляем шейдер.
-	    if (compileStatus[0] == 0)
-	    {
-	        GLES20.glDeleteShader(vertexShader_Handle);
-	        throw new RuntimeException("Error compiling vertex shader.");
-	    }
-		
+		final int[] compileStatus = new int[1];
+		GLES20.glGetShaderiv(vertexShader_Handle, GLES20.GL_COMPILE_STATUS,
+				compileStatus, 0);
+
+		// Если компиляция не удалась, удаляем шейдер.
+		if (compileStatus[0] == 0) {
+			GLES20.glDeleteShader(vertexShader_Handle);
+			throw new RuntimeException("Error compiling vertex shader.");
+		}
+
 		// получаем ссылку на фрагментный шейдер
 		int fragmentShader_Handle = GLES20
 				.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
@@ -70,18 +73,18 @@ public class Shader {
 		GLES20.glShaderSource(fragmentShader_Handle, fragmentShaderCode);
 		// компилируем фрагментный шейдер
 		GLES20.glCompileShader(fragmentShader_Handle);
-		
+
 		// Получаем результат процесса компиляции
-	    final int[] compileStatus1 = new int[1];
-	    GLES20.glGetShaderiv(fragmentShader_Handle, GLES20.GL_COMPILE_STATUS, compileStatus1, 0);
-	 
-	    // Если компиляция не удалась, удаляем шейдер.
-	    if (compileStatus1[0] == 0)
-	    {
-	        GLES20.glDeleteShader(fragmentShader_Handle);
-	        throw new RuntimeException("Error compiling fragment shader.");
-	    }
-		
+		final int[] compileStatus1 = new int[1];
+		GLES20.glGetShaderiv(fragmentShader_Handle, GLES20.GL_COMPILE_STATUS,
+				compileStatus1, 0);
+
+		// Если компиляция не удалась, удаляем шейдер.
+		if (compileStatus1[0] == 0) {
+			GLES20.glDeleteShader(fragmentShader_Handle);
+			throw new RuntimeException("Error compiling fragment shader.");
+		}
+
 		// получаем ссылку на шейдерную программу
 		programHandle = GLES20.glCreateProgram();
 		// присоединяем к шейдерной программе вершинный шейдер
@@ -92,16 +95,16 @@ public class Shader {
 		GLES20.glLinkProgram(programHandle);
 
 		// Получаем ссылку на программу.
-	    final int[] linkStatus = new int[1];
-	    GLES20.glGetProgramiv(programHandle, GLES20.GL_LINK_STATUS, linkStatus, 0);
-	 
-	    // Если ссылку не удалось получить, удаляем программу.
-	    if (linkStatus[0] == 0)
-	    {
-	        GLES20.glDeleteProgram(programHandle);
-	        throw new RuntimeException("Error creating program.");
-	    }
-		
+		final int[] linkStatus = new int[1];
+		GLES20.glGetProgramiv(programHandle, GLES20.GL_LINK_STATUS, linkStatus,
+				0);
+
+		// Если ссылку не удалось получить, удаляем программу.
+		if (linkStatus[0] == 0) {
+			GLES20.glDeleteProgram(programHandle);
+			throw new RuntimeException("Error creating program.");
+		}
+
 		getHandles();
 	}
 
@@ -147,6 +150,10 @@ public class Shader {
 		normalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
 		textureHandle = GLES20.glGetAttribLocation(programHandle, "a_Texture");
 		colorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
+		cameraHandle = GLES20.glGetUniformLocation(programHandle,
+				"u_Camera");
+		lightPositionHandle = GLES20.glGetUniformLocation(programHandle,
+				"u_LightPosition");
 	}
 
 	public int getMVPMatrixHandle() {
@@ -160,16 +167,24 @@ public class Shader {
 	public int getNormalHandle() {
 		return normalHandle;
 	}
-	
+
 	public int getTextureHandle() {
 		return textureHandle;
 	}
-	
+
 	public int getColorHandle() {
 		return colorHandle;
 	}
-	
+
 	public int getProgramHandle() {
 		return programHandle;
+	}
+
+	public int getCameraHandle() {
+		return cameraHandle;
+	}
+
+	public int getLightPositionHandle() {
+		return lightPositionHandle;
 	}
 }

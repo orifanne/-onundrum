@@ -58,31 +58,26 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		// Set the background clear color to gray.
 		GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
 
-		final String vertexShader = "uniform mat4 u_MVPMatrix; \n" // A constant
-																	// representing
-																	// the
-																	// combined
-																	// model/view/projection
-																	// matrix.
-				+ "attribute vec4 a_Position; \n" // Per-vertex position
-													// information we will pass
-													// in.
+		final String vertexShader = "uniform mat4 u_MVPMatrix; \n" 
+				
+				+ "attribute vec3 a_Position; \n" 
+				+ "varying vec3 v_Position; \n"
 				+ "attribute vec2 a_Texture; \n"
 				+ "varying vec2 v_Texture; \n"
 				+ "attribute vec3 a_Normal; \n"
 				+ "varying vec3 v_Normal; \n"
 				+ "attribute vec4 a_Color; \n"
 				+ "varying vec4 v_Color; \n"
-				+ "void main() \n" // The entry point for our vertex shader.
+				+ "void main() \n" 
 				+ "{ \n"
-				// It will be interpolated across the triangle.
-				+ " gl_Position = u_MVPMatrix" // gl_Position is a special
-													// variable used to store
-													// the final position.
-				+ " * a_Position; \n" // Multiply the vertex by the matrix to
-										// get the final point in
-				+ "v_Texture = a_Texture; \n" + "} \n"; // normalized screen
-														// coordinates.
+				
+				+ " gl_Position = u_MVPMatrix * vec4(a_Position, 1.0); \n" 
+				+ "v_Texture = a_Texture; \n"
+				+ "v_Position = a_Position; \n"
+				+ "vec3 n_Normal = normalize(a_Normal);"
+				+ "v_Normal = n_Normal; \n"
+				+ "v_Color = a_Color; \n" + "} \n";
+		
 		final String fragmentShader = "precision mediump float; \n" // Set the
 																	// default
 																	// precision
@@ -92,34 +87,59 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 																	// need as
 																	// high of a
 				// precision in the fragment shader.
+				+ "varying vec3 v_Position; \n"
 				+ "varying vec2 v_Texture; \n"
+				+ "varying vec3 v_Normal; \n"
+				+ "varying vec4 v_Color; \n"
 				+ "uniform sampler2D u_Texture;\n"
+				//принимаем координаты камеры
+				+ "uniform vec3 u_Camera; \n"
+				//принимаем координаты источника света
+				+ "uniform vec3 u_LightPosition; \n"
 				+ "void main() \n" // The entry point for our fragment shader.
 				+ "{ \n"
-				+ "vec4 textureColor = texture2D(u_Texture, v_Texture); \n"
+				+ "vec3 n_Normal = normalize(v_Normal);"
 
-				+ "gl_FragColor = textureColor; \n" // Pass the color
-														// directly through
-														// the pipeline.
+				// вычисляем единичный вектор, указывающий из пикселя на
+				// источник света
+				+ "vec3 lightvector = normalize(u_LightPosition - v_Position); \n"
+				// вычисляем единичный вектор, указывающий из пикселя на камеру
+				+ "vec3 lookvector = normalize(u_Camera - v_Position); \n"
+				// определяем яркость фонового освещения
+				+ "float ambient = 0.2; \n"
+				// определяем коэффициент диффузного освещения
+				+ "float k_diffuse = 0.8; \n"
+				// определяем коэффициент зеркального освещения
+				+ "float k_specular = 0.4; \n"
+				// вычисляем яркость диффузного освещения пикселя
+				+ "float diffuse = k_diffuse * max(dot(n_Normal, lightvector), 0.0); \n"
+				// вычисляем вектор отраженного луча света
+				+ "vec3 reflectvector = reflect(-lightvector, n_Normal); \n"
+				// вычисляем яркость зеркального освещения пикселя
+				+ "float specular = k_specular * pow( max(dot(lookvector,reflectvector),0.0), 40.0 ); \n"
+				// определяем вектор белого цвета
+				+ "vec4 one = vec4(1.0,1.0,1.0,1.0); \n"
+				// вычисляем цвет пикселя
+				+ "gl_FragColor = (ambient + diffuse + specular) * v_Color;\n"
+
+				// + "vec4 textureColor = texture2D(u_Texture, v_Texture); \n"
+
+				// + "gl_FragColor = v_Color; \n" // Pass the color
+				// directly through
+				// the pipeline.
 				+ "} \n";
 
 		shader = new Shader(vertexShader, fragmentShader);
 		texture = new Texture(context, R.drawable.back);
 
-		float[] v = { 0.0f, 0.0f, 0.0f, 
-				      0.0f, 0.0f, 1.0f, 
-				      0.0f, 0.0f, 
-				      1.0f, 1.0f, 1.0f, 1.0f,
-				      
-				      1.0f, 0.0f, 0.0f, 
-				      0.0f, 0.0f, 1.0f, 
-				      1.0f, 0.0f, 
-				      1.0f, 1.0f, 1.0f, 1.0f,
-				      
-				      1.0f, 1.0f, 0.0f, 
-				      0.0f, 0.0f, 1.0f, 
-				      1.0f, 1.0f,
-				      1.0f, 1.0f, 1.0f, 1.0f};
+		float[] v = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+
+				1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+				1.0f, 1.0f,
+
+				1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f };
 
 		byte[] i = { 2, 1, 0 };
 
@@ -188,6 +208,8 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 		GLES20.glUniformMatrix4fv(shader.getMVPMatrixHandle(), 1, false,
 				mMVPMatrix, 0);
+		GLES20.glUniform3f(shader.getCameraHandle(), eyeX, eyeY, eyeZ);
+		GLES20.glUniform3f(shader.getLightPositionHandle(), 2, 2, 2);
 
 		model.draw(new Coords(0, 0, 0));
 	}
