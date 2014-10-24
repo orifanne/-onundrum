@@ -245,7 +245,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 		// Position the eye behind the origin.
 		final float eyeX = (float) Math.cos(Math.PI * 0.5
-				- MainActivity.rotationCurrent[2])
+				+ MainActivity.rotationCurrent[2])
 				* lookDistance;
 		final float eyeY = (float) Math.cos(Math.PI * 0.5
 				- MainActivity.rotationCurrent[1])
