@@ -119,11 +119,10 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				+ "float specular = k_specular * pow( max(dot(lookvector,reflectvector),0.0), 40.0 ); \n"
 				// определяем вектор белого цвета
 				+ "vec4 one = vec4(1.0,1.0,1.0,1.0); \n"
+
+				+ "vec4 textureColor = texture2D(u_Texture, v_Texture); \n"
 				// вычисляем цвет пикселя
-				+ "gl_FragColor = (ambient + diffuse + specular) * v_Color;\n"
-
-				// + "vec4 textureColor = texture2D(u_Texture, v_Texture); \n"
-
+				+ "gl_FragColor = (ambient + diffuse + specular) * textureColor;\n"
 				// + "gl_FragColor = v_Color; \n" // Pass the color
 				// directly through
 				// the pipeline.
