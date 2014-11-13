@@ -1,8 +1,7 @@
 package ori.conundrum;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -10,11 +9,14 @@ import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLU;
 import android.opengl.Matrix;
-import android.os.SystemClock;
 
 public class MyClassRenderer implements GLSurfaceView.Renderer {
+
+	GameObject plane;
+	Ball square;
+	
+	private final float angle = (float) 0.25;
 	/**
 	 * Store the model matrix. This matrix is used to move models from object
 	 * space (where each model can be thought of being located at the center of
@@ -58,26 +60,19 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		// Set the background clear color to gray.
 		GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
 
-		final String vertexShader = "uniform mat4 u_MVPMatrix; \n" 
-				
-				+ "attribute vec3 a_Position; \n" 
-				+ "varying vec3 v_Position; \n"
-				+ "attribute vec2 a_Texture; \n"
-				+ "varying vec2 v_Texture; \n"
-				+ "attribute vec3 a_Normal; \n"
-				+ "varying vec3 v_Normal; \n"
-				+ "attribute vec4 a_Color; \n"
-				+ "varying vec4 v_Color; \n"
-				+ "void main() \n" 
-				+ "{ \n"
-				
-				+ " gl_Position = u_MVPMatrix * vec4(a_Position, 1.0); \n" 
-				+ "v_Texture = a_Texture; \n"
-				+ "v_Position = a_Position; \n"
+		final String vertexShader = "uniform mat4 u_MVPMatrix; \n"
+
+		+ "attribute vec3 a_Position; \n" + "varying vec3 v_Position; \n"
+				+ "attribute vec2 a_Texture; \n" + "varying vec2 v_Texture; \n"
+				+ "attribute vec3 a_Normal; \n" + "varying vec3 v_Normal; \n"
+				+ "attribute vec4 a_Color; \n" + "varying vec4 v_Color; \n"
+				+ "void main() \n" + "{ \n"
+
+				+ " gl_Position = u_MVPMatrix * vec4(a_Position, 1.0); \n"
+				+ "v_Texture = a_Texture; \n" + "v_Position = a_Position; \n"
 				+ "vec3 n_Normal = normalize(a_Normal);"
-				+ "v_Normal = n_Normal; \n"
-				+ "v_Color = a_Color; \n" + "} \n";
-		
+				+ "v_Normal = n_Normal; \n" + "v_Color = a_Color; \n" + "} \n";
+
 		final String fragmentShader = "precision mediump float; \n" // Set the
 																	// default
 																	// precision
@@ -86,15 +81,15 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 																	// We don't
 																	// need as
 																	// high of a
-				// precision in the fragment shader.
+		// precision in the fragment shader.
 				+ "varying vec3 v_Position; \n"
 				+ "varying vec2 v_Texture; \n"
 				+ "varying vec3 v_Normal; \n"
 				+ "varying vec4 v_Color; \n"
 				+ "uniform sampler2D u_Texture;\n"
-				//принимаем координаты камеры
+				// принимаем координаты камеры
 				+ "uniform vec3 u_Camera; \n"
-				//принимаем координаты источника света
+				// принимаем координаты источника света
 				+ "uniform vec3 u_LightPosition; \n"
 				+ "void main() \n" // The entry point for our fragment shader.
 				+ "{ \n"
@@ -122,27 +117,104 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 				+ "vec4 textureColor = texture2D(u_Texture, v_Texture); \n"
 				// вычисляем цвет пикселя
-				+ "gl_FragColor = (ambient + diffuse + specular) * textureColor;\n"
-				// + "gl_FragColor = v_Color; \n" // Pass the color
-				// directly through
-				// the pipeline.
+				// +
+				// "gl_FragColor = (ambient + diffuse + specular) * textureColor;\n"
+				+ "gl_FragColor = (ambient + diffuse + specular) * v_Color;\n"
 				+ "} \n";
 
 		shader = new Shader(vertexShader, fragmentShader);
-		texture = new Texture(context, R.drawable.back);
+		texture = new Texture(context, R.drawable.back64);
+		float[] v = {
+				// coords
+				-2.0f, 1.0f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				0.0f, 0.0f,
+				// color
+				1.0f, 1.0f, 1.0f, 1.0f,
 
-		float[] v = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-				1.0f, 1.0f, 1.0f,
+				// coords
+				2.0f, 1.0f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				1.0f, 0.0f,
+				// color
+				1.0f, 1.0f, 1.0f, 1.0f,
 
-				1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+				// coords
+				2.0f, -1.0f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
 				1.0f, 1.0f,
+				// color
+				1.0f, 1.0f, 1.0f, 1.0f,
 
-				1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-				1.0f, 1.0f };
+				// coords
+				-2.0f, -1.0f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				1.0f, 1.0f,
+				// color
+				1.0f, 1.0f, 1.0f, 1.0f };
 
-		byte[] i = { 2, 1, 0 };
+		byte[] i = { 0, 1, 2, 0, 2, 3 };
 
 		model = new Model3D(v, i, shader, texture);
+		HashMap<Model3D, ArrayList<Coords>> h = new HashMap<Model3D, ArrayList<Coords>>();
+		ArrayList<Coords> c = new ArrayList<Coords>();
+		c.add(new Coords(0, 0, 0));
+		h.put(model, c);
+		plane = new GameObject(new Coords(0, 0, 0), h);
+		
+		
+		float[] v1 = {
+				// coords
+				-0.1f, 0.1f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				0.0f, 0.0f,
+				// color
+				0.0f, 0.0f, 0.0f, 1.0f,
+
+				// coords
+				0.1f, 0.1f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				1.0f, 0.0f,
+				// color
+				0.0f, 0.0f, 0.0f, 1.0f,
+
+				// coords
+				0.1f, -0.1f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				1.0f, 1.0f,
+				// color
+				0.0f, 0.0f, 0.0f, 1.0f,
+
+				// coords
+				-0.1f, -0.1f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				1.0f, 1.0f,
+				// color
+				0.0f, 0.0f, 0.0f, 1.0f };
+
+		byte[] i1 = { 0, 1, 2, 0, 2, 3 };
+		model = new Model3D(v1, i1, shader, texture);
+		HashMap<Model3D, ArrayList<Coords>> h1 = new HashMap<Model3D, ArrayList<Coords>>();
+		ArrayList<Coords> c1 = new ArrayList<Coords>();
+		c1.add(new Coords(0, 0, 0));
+		h1.put(model, c1);
+		square = new Ball(new Coords(0, 0, 0), h1);
 	}
 
 	@Override
@@ -167,11 +239,16 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	public void onDrawFrame(GL10 glUnused) {
 
 		// Position the eye behind the origin.
-		final float eyeX = (float) Math.cos(Math.PI * 0.5
-				- MainActivity.rotationCurrent[2])
+		final float eyeX = (float) Math.cos(Math.PI
+				* 0.5
+				+ (MainActivity.xAngle / Math.abs(MainActivity.xAngle))
+				* Math.min(Math.abs(Math.min(Math.abs(MainActivity.xAngle),
+						Math.PI - Math.abs(MainActivity.xAngle))), angle))
 				* lookDistance;
+
 		final float eyeY = (float) Math.cos(Math.PI * 0.5
-				- MainActivity.rotationCurrent[1])
+				+ (MainActivity.yAngle / Math.abs(MainActivity.yAngle))
+				* Math.min(Math.abs(MainActivity.yAngle), angle))
 				* lookDistance;
 		final float eyeZ = (float) Math.sqrt(lookDistance * lookDistance
 				- (eyeX * eyeX + eyeY * eyeY));
@@ -210,6 +287,8 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		GLES20.glUniform3f(shader.getCameraHandle(), eyeX, eyeY, eyeZ);
 		GLES20.glUniform3f(shader.getLightPositionHandle(), 2, 2, 2);
 
-		model.draw(new Coords(0, 0, 0));
+		plane.draw();
+		square.countCoords();
+		square.draw();
 	}
 }

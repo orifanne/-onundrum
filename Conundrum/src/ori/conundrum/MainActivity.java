@@ -7,18 +7,21 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
+import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
+	public static int deltaT = 60;
 	TextView tvText;
 	SensorManager sensorManager;
 	Sensor sensorAccel;
@@ -27,6 +30,12 @@ public class MainActivity extends Activity {
 	Sensor sensorMagnet;
 
 	StringBuilder sb = new StringBuilder();
+
+	// надо ли разворачивать оси, потому что ориентация по умолчанию портретная
+	boolean flip = false;
+
+	public static float xAngle;
+	public static float yAngle;
 
 	Timer timer;
 
@@ -37,7 +46,7 @@ public class MainActivity extends Activity {
 
 	float[] r = new float[9];
 
-	public static float[] rotationCurrent = new float[3];
+	float[] rotationCurrent = new float[3];
 
 	// создадим ссылку на экземпляр нашего класса MyClassSurfaceView
 	private GLSurfaceView mGLSurfaceView;
@@ -45,7 +54,14 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
+		// определяем, где у устройства верх
+		Display display = getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+		if (size.x < size.y)
+			flip = true;
+
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		sensorLinAccel = sensorManager
@@ -67,7 +83,8 @@ public class MainActivity extends Activity {
 			mGLSurfaceView.setEGLContextClientVersion(2);
 
 			// Устанавливаем рендеринг
-			mGLSurfaceView.setRenderer(new MyClassRenderer(this.getBaseContext()));
+			mGLSurfaceView.setRenderer(new MyClassRenderer(this
+					.getBaseContext()));
 			mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 		} else {
 			// Устройство поддерживает только OpenGL ES 1.x
@@ -123,14 +140,19 @@ public class MainActivity extends Activity {
 				});
 			}
 		};
-		timer.schedule(task, 0, 60);
+		timer.schedule(task, 0, deltaT);
 	}
-	
+
 	void getDeviceOrientation() {
 		SensorManager.getRotationMatrix(r, null, valuesAccel, valuesMagnet);
 		SensorManager.getOrientation(r, rotationCurrent);
-		rotationCurrent[0] *= -1;
-		rotationCurrent[1] *= -1;
+		if (flip) {
+			xAngle = rotationCurrent[1];
+			yAngle = rotationCurrent[2];
+		} else {
+			xAngle = rotationCurrent[2];
+			yAngle = rotationCurrent[1];
+		}
 		return;
 	}
 
@@ -181,9 +203,9 @@ public class MainActivity extends Activity {
 				}
 				break;
 			case Sensor.TYPE_MAGNETIC_FIELD:
-		        for (int i=0; i < 3; i++){
-		          valuesMagnet[i] = event.values[i];
-		        }  
+				for (int i = 0; i < 3; i++) {
+					valuesMagnet[i] = event.values[i];
+				}
 				break;
 			}
 

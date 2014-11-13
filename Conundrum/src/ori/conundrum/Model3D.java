@@ -5,6 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import android.opengl.GLES20;
+import android.util.Log;
 
 /**
  * Представляет 3d-модель.
@@ -19,6 +20,7 @@ public class Model3D {
 	 * Координаты, нормаль, текустурные координаты, цвет.
 	 */
 	private float[] verticesData;
+	private float[] verticesToDraw;
 	FloatBuffer vertices;
 
 	/** Массив индексов */
@@ -54,6 +56,7 @@ public class Model3D {
 				.allocateDirect(verticesData.length * (Float.SIZE / 8))
 				.order(ByteOrder.nativeOrder()).asFloatBuffer();
 
+		// ?
 		this.vertices.put(verticesData).position(0);
 
 		this.indices = ByteBuffer.allocateDirect(
@@ -62,7 +65,9 @@ public class Model3D {
 
 		this.indices.put(indicesData).position(0);
 
+		// ?
 		linkVertexBuffer();
+		// ?
 		shader.linkTexture(texture);
 	}
 
@@ -97,12 +102,12 @@ public class Model3D {
 				VERTEX_ATTRIB_SIZE, vertices);
 		// включаем использование атрибута a_Texture
 		GLES20.glEnableVertexAttribArray(shader.getTextureHandle());
-		
+
 		vertices.position(VERTEX_COLOR_OFFSET);
 		// связываем буфер координат вершин vertices с атрибутом a_Color
 		GLES20.glVertexAttribPointer(shader.getColorHandle(),
-				VERTEX_COLOR_SIZE, GLES20.GL_FLOAT, false,
-				VERTEX_ATTRIB_SIZE, vertices);
+				VERTEX_COLOR_SIZE, GLES20.GL_FLOAT, false, VERTEX_ATTRIB_SIZE,
+				vertices);
 		// включаем использование атрибута a_Color
 		GLES20.glEnableVertexAttribArray(shader.getColorHandle());
 	}
@@ -111,8 +116,35 @@ public class Model3D {
 	 * Отрисовать модель.
 	 */
 	public void draw(Coords coords) {
+		int size = VERTEX_POS_SIZE
+				+ VERTEX_NORMAL_SIZE + VERTEX_TEXCOORD_SIZE + VERTEX_COLOR_SIZE;
+		// транспонирование
+		verticesToDraw = new float[verticesData.length];
+		for (int i = 0; i < verticesData.length; i++) {
+			int d = i % size;
+			switch (d) {
+				case 0:	verticesToDraw[i] = verticesData[i] + coords.getX(); break;
+				case 1: verticesToDraw[i] = verticesData[i] + coords.getY(); break;
+				case 2: verticesToDraw[i] = verticesData[i] + coords.getZ(); break;
+				default: verticesToDraw[i] = verticesData[i];
+			}
+		}
+		this.vertices = ByteBuffer
+				.allocateDirect(verticesData.length * (Float.SIZE / 8))
+				.order(ByteOrder.nativeOrder()).asFloatBuffer();
+		this.vertices.put(verticesToDraw).position(0);
+		linkVertexBuffer();
+		shader.linkTexture(texture);
 		GLES20.glDrawElements(GLES20.GL_TRIANGLES, indicesData.length,
 				GLES20.GL_UNSIGNED_BYTE, indices);
+		unlinkVertexBuffer();
+	}
+
+	private void unlinkVertexBuffer() {
+		GLES20.glDisableVertexAttribArray(shader.getPositionHandle());
+		GLES20.glDisableVertexAttribArray(shader.getNormalHandle());
+		GLES20.glDisableVertexAttribArray(shader.getTextureHandle());
+		GLES20.glDisableVertexAttribArray(shader.getColorHandle());
 	}
 
 	public float[] getVerticesData() {
