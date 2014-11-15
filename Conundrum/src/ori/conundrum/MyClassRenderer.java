@@ -15,6 +15,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 	GameObject plane;
 	Ball square;
+	Model3D sphere;
 	
 	private final float angle = (float) 0.25;
 	/**
@@ -151,6 +152,24 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				1.0f, 1.0f,
 				// color
 				1.0f, 1.0f, 1.0f, 1.0f,
+				
+				// coords
+				-2.0f, 1.0f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				0.0f, 0.0f,
+				// color
+				1.0f, 1.0f, 1.0f, 1.0f,
+				
+				// coords
+				2.0f, -1.0f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				1.0f, 1.0f,
+				// color
+				1.0f, 1.0f, 1.0f, 1.0f,
 
 				// coords
 				-2.0f, -1.0f, 0.0f,
@@ -198,6 +217,24 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				1.0f, 1.0f,
 				// color
 				0.0f, 0.0f, 0.0f, 1.0f,
+				
+				// coords
+				-0.1f, 0.1f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				0.0f, 0.0f,
+				// color
+				0.0f, 0.0f, 0.0f, 1.0f,
+				
+				// coords
+				0.1f, -0.1f, 0.0f,
+				// normal
+				0.0f, 0.0f, 1.0f,
+				// tex coords
+				1.0f, 1.0f,
+				// color
+				0.0f, 0.0f, 0.0f, 1.0f,
 
 				// coords
 				-0.1f, -0.1f, 0.0f,
@@ -214,7 +251,9 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		ArrayList<Coords> c1 = new ArrayList<Coords>();
 		c1.add(new Coords(0, 0, 0));
 		h1.put(model, c1);
-		square = new Ball(new Coords(0, 0, 0), h1);
+		square = new Ball(new Coords(0, 0, 0), h1, new Coords(-2, 1, 0),
+				new Coords(2, -1, 0.2f), 0.1f);
+		sphere = new Model3D(context, "sphere.obj", shader, texture);
 	}
 
 	@Override
@@ -290,5 +329,6 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		plane.draw();
 		square.countCoords();
 		square.draw();
+		sphere.draw(new Coords(0, 0, 0));
 	}
 }
