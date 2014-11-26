@@ -11,17 +11,15 @@ public class Coords {
 	private float x = 0;
 	private float y = 0;
 	private float z = 0;
-	
-	
-	
+	private float xAngle = 0;
+	private float yAngle = 0;
+
 	public Coords(float x, float y, float z) {
 		super();
 		this.x = x;
 		this.y = y;
 		this.z = z;
 	}
-
-
 
 	public float getX() {
 		return x;
@@ -45,5 +43,21 @@ public class Coords {
 
 	public void setZ(float z) {
 		this.z = z;
+	}
+
+	public float getXAngle() {
+		return xAngle;
+	}
+
+	public void setXAngle(float xAngle) {
+		this.xAngle = xAngle;
+	}
+
+	public float getYAngle() {
+		return yAngle;
+	}
+
+	public void setYAngle(float yAngle) {
+		this.yAngle = yAngle;
 	}
 }

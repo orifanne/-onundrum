@@ -112,7 +112,7 @@ public class Model3D {
 				// грань
 				if (line.startsWith("f ")) {
 					String[] s = line.split(" ");
-					for (int j = 0; j < s.length; j++) {
+					for (int j = 1; j < s.length; j++) {
 						String[] s1 = s[j].split("/");
 						int vert = Integer.parseInt(s1[0]) - 1;
 						int norm = Integer.parseInt(s1[2]) - 1;
@@ -128,22 +128,36 @@ public class Model3D {
 						f.add(0.0f);
 						f.add(0.0f);
 						// color
-						f.add(0.0f);
+						f.add(1.0f);
 						f.add(0.0f);
 						f.add(0.0f);
 						f.add(1.0f);
 					}
 				}
 			}
-
 			verticesData = new float[f.size()];
 			for (int i = 0; i < f.size(); i++)
-				if (f.get(i) != null)
+				if (f.get(i) != null) {
 					verticesData[i] = f.get(i);
-				else
+					// Log.d("*****************",
+					// Float.toString(verticesData[i]));
+				} else
 					verticesData[i] = 0;
 			this.shader = shader;
 			this.texture = texture;
+			// Log.d("*****************", Integer.toString(f.size()));
+
+			this.vertices = ByteBuffer
+					.allocateDirect(verticesData.length * (Float.SIZE / 8))
+					.order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+			// ?
+			this.vertices.put(verticesData).position(0);
+
+			// ?
+			linkVertexBuffer();
+			// ?
+			shader.linkTexture(texture);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -199,6 +213,7 @@ public class Model3D {
 		int size = VERTEX_POS_SIZE + VERTEX_NORMAL_SIZE + VERTEX_TEXCOORD_SIZE
 				+ VERTEX_COLOR_SIZE;
 		// транспонирование
+
 		verticesToDraw = new float[verticesData.length];
 		for (int i = 0; i < verticesData.length; i++) {
 			int d = i % size;
@@ -222,10 +237,10 @@ public class Model3D {
 		this.vertices.put(verticesToDraw).position(0);
 		linkVertexBuffer();
 		shader.linkTexture(texture);
+
 		// GLES20.glDrawElements(GLES20.GL_TRIANGLES, indicesData.length,
 		// GLES20.GL_UNSIGNED_BYTE, indices);
-		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, verticesData.length
-				/ (VERTEX_ATTRIB_SIZE / (Float.SIZE / 8)));
+		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, verticesData.length / size);
 		unlinkVertexBuffer();
 	}
 

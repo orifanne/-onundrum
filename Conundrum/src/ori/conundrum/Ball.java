@@ -77,6 +77,10 @@ public class Ball extends GameObject {
 		else
 			coords.setY(Math.min(boundLeftDownFar.getY() - rad, coords.getY()
 					+ deltay));
+		
+		// рассчет угла поворота
+		
+		
 
 		// Log.d("***************", Float.toString(deltax));
 	}

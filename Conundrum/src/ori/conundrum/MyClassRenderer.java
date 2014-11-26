@@ -15,7 +15,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 	GameObject plane;
 	Ball square;
-	Model3D sphere;
+	Ball sphere;
 	
 	private final float angle = (float) 0.25;
 	/**
@@ -121,6 +121,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				// +
 				// "gl_FragColor = (ambient + diffuse + specular) * textureColor;\n"
 				+ "gl_FragColor = (ambient + diffuse + specular) * v_Color;\n"
+				//+ "gl_FragColor = (ambient + diffuse + specular) * one;\n"
 				+ "} \n";
 
 		shader = new Shader(vertexShader, fragmentShader);
@@ -253,7 +254,14 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		h1.put(model, c1);
 		square = new Ball(new Coords(0, 0, 0), h1, new Coords(-2, 1, 0),
 				new Coords(2, -1, 0.2f), 0.1f);
-		sphere = new Model3D(context, "sphere.obj", shader, texture);
+		
+		model = new Model3D(context, "sphere1_kvo.obj", shader, texture);
+		HashMap<Model3D, ArrayList<Coords>> h2 = new HashMap<Model3D, ArrayList<Coords>>();
+		ArrayList<Coords> c2 = new ArrayList<Coords>();
+		c2.add(new Coords(0, 0, 0));
+		h2.put(model, c1);
+		sphere = new Ball(new Coords(0, 0, 0), h2, new Coords(-2, 1, 0),
+				new Coords(2, -1, 0.2f), 0.3f);
 	}
 
 	@Override
@@ -327,8 +335,9 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		GLES20.glUniform3f(shader.getLightPositionHandle(), 2, 2, 2);
 
 		plane.draw();
-		square.countCoords();
-		square.draw();
-		sphere.draw(new Coords(0, 0, 0));
+		//square.countCoords();
+		//square.draw();
+		sphere.countCoords();
+		sphere.draw();
 	}
 }
