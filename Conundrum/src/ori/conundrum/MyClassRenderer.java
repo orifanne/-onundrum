@@ -2,6 +2,7 @@ package ori.conundrum;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -10,13 +11,14 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 
 public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 	GameObject plane;
 	Ball square;
 	Ball sphere;
-	
+
 	private final float angle = (float) 0.25;
 	/**
 	 * Store the model matrix. This matrix is used to move models from object
@@ -121,7 +123,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				// +
 				// "gl_FragColor = (ambient + diffuse + specular) * textureColor;\n"
 				+ "gl_FragColor = (ambient + diffuse + specular) * v_Color;\n"
-				//+ "gl_FragColor = (ambient + diffuse + specular) * one;\n"
+				// + "gl_FragColor = (ambient + diffuse + specular) * one;\n"
 				+ "} \n";
 
 		shader = new Shader(vertexShader, fragmentShader);
@@ -153,7 +155,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				1.0f, 1.0f,
 				// color
 				1.0f, 1.0f, 1.0f, 1.0f,
-				
+
 				// coords
 				-2.0f, 1.0f, 0.0f,
 				// normal
@@ -162,7 +164,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				0.0f, 0.0f,
 				// color
 				1.0f, 1.0f, 1.0f, 1.0f,
-				
+
 				// coords
 				2.0f, -1.0f, 0.0f,
 				// normal
@@ -189,8 +191,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		c.add(new Coords(0, 0, 0));
 		h.put(model, c);
 		plane = new GameObject(new Coords(0, 0, 0), h);
-		
-		
+
 		float[] v1 = {
 				// coords
 				-0.1f, 0.1f, 0.0f,
@@ -218,7 +219,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				1.0f, 1.0f,
 				// color
 				0.0f, 0.0f, 0.0f, 1.0f,
-				
+
 				// coords
 				-0.1f, 0.1f, 0.0f,
 				// normal
@@ -227,7 +228,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 				0.0f, 0.0f,
 				// color
 				0.0f, 0.0f, 0.0f, 1.0f,
-				
+
 				// coords
 				0.1f, -0.1f, 0.0f,
 				// normal
@@ -254,8 +255,8 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		h1.put(model, c1);
 		square = new Ball(new Coords(0, 0, 0), h1, new Coords(-2, 1, 0),
 				new Coords(2, -1, 0.2f), 0.1f);
-		
-		model = new Model3D(context, "sphere1_kvo.obj", shader, texture);
+
+		model = new Model3D(context, "icosphere.obj", shader, texture);
 		HashMap<Model3D, ArrayList<Coords>> h2 = new HashMap<Model3D, ArrayList<Coords>>();
 		ArrayList<Coords> c2 = new ArrayList<Coords>();
 		c2.add(new Coords(0, 0, 0));
@@ -319,6 +320,9 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 		GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 
+		GLES20.glUniform3f(shader.getCameraHandle(), eyeX, eyeY, eyeZ);
+		GLES20.glUniform3f(shader.getLightPositionHandle(), 2, 2, 2);
+
 		Matrix.setIdentityM(mModelMatrix, 0);
 
 		// This multiplies the view matrix by the model matrix, and stores the
@@ -331,13 +335,51 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
 		GLES20.glUniformMatrix4fv(shader.getMVPMatrixHandle(), 1, false,
 				mMVPMatrix, 0);
-		GLES20.glUniform3f(shader.getCameraHandle(), eyeX, eyeY, eyeZ);
-		GLES20.glUniform3f(shader.getLightPositionHandle(), 2, 2, 2);
 
-		plane.draw();
-		//square.countCoords();
-		//square.draw();
+		// plane.draw();
+		// square.countCoords();
+		// square.draw();
+		// sphere.countCoords();
+		// sphere.draw();
+		drawGameObject(plane);
 		sphere.countCoords();
-		sphere.draw();
+		drawGameObject(sphere);
+	}
+
+	private void drawGameObject(GameObject o) {
+		Iterator<Model3D> it = o.getModels().keySet().iterator();
+		while (it.hasNext()) {
+			Model3D m = it.next();
+			ArrayList<Coords> c = o.getModels().get(m);
+
+			for (int i = 0; i < c.size(); i++) {
+				// Log.d("***************", Float.toString( c.get(i).getX()));
+
+				Matrix.setIdentityM(mModelMatrix, 0);
+
+				Matrix.translateM(mModelMatrix, 0, o.getCoords().getX(), o
+						.getCoords().getY(), c.get(i).getZ());
+				Matrix.rotateM(mModelMatrix, 0, o.getCoords().getXAngle(), 1,
+						0, 0);
+				Matrix.rotateM(mModelMatrix, 0, o.getCoords().getYAngle(), 0,
+						1, 0);
+
+				Matrix.translateM(mModelMatrix, 0, c.get(i).getX(), c.get(i)
+						.getY(), c.get(i).getZ());
+				Matrix.rotateM(mModelMatrix, 0, c.get(i).getXAngle(), 1, 0, 0);
+				Matrix.rotateM(mModelMatrix, 0, c.get(i).getYAngle(), 0, 1, 0);
+
+				Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix,
+						0);
+				Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0,
+						mMVPMatrix, 0);
+				GLES20.glUniformMatrix4fv(shader.getMVPMatrixHandle(), 1,
+						false, mMVPMatrix, 0);
+				// !
+				m.draw();
+			}
+
+		}
+
 	}
 }

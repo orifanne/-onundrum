@@ -244,6 +244,25 @@ public class Model3D {
 		unlinkVertexBuffer();
 	}
 
+	/**
+	 * Отрисовать модель.
+	 */
+	public void draw() {
+		int size = VERTEX_POS_SIZE + VERTEX_NORMAL_SIZE + VERTEX_TEXCOORD_SIZE
+				+ VERTEX_COLOR_SIZE;
+		this.vertices = ByteBuffer
+				.allocateDirect(verticesData.length * (Float.SIZE / 8))
+				.order(ByteOrder.nativeOrder()).asFloatBuffer();
+		this.vertices.put(verticesData).position(0);
+		linkVertexBuffer();
+		shader.linkTexture(texture);
+
+		// GLES20.glDrawElements(GLES20.GL_TRIANGLES, indicesData.length,
+		// GLES20.GL_UNSIGNED_BYTE, indices);
+		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, verticesData.length / size);
+		unlinkVertexBuffer();
+	}
+	
 	private void unlinkVertexBuffer() {
 		GLES20.glDisableVertexAttribArray(shader.getPositionHandle());
 		GLES20.glDisableVertexAttribArray(shader.getNormalHandle());

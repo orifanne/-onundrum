@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import android.util.Log;
+
 /**
  * Представляет игровой объект - единицу, имеющую набор 3d-моделей и координаты.
  * 
@@ -45,6 +47,7 @@ public class GameObject {
 			ArrayList<Coords> c = models.get(m);
 
 			for (int i = 0; i < c.size(); i++) {
+				Log.d("***************", Float.toString( c.get(i).getX()));
 				// транспонирование
 				Coords s = new Coords(c.get(i).getX() + coords.getX(), c.get(i)
 						.getY() + coords.getY(), c.get(i).getZ()
@@ -71,6 +74,10 @@ public class GameObject {
 
 	public void setCoords(Coords coords) {
 		this.coords = coords;
+	}
+
+	public HashMap<Model3D, ArrayList<Coords>> getModels() {
+		return models;
 	}
 
 }

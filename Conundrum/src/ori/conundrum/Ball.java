@@ -65,23 +65,26 @@ public class Ball extends GameObject {
 				* (MainActivity.deltaT * 0.001) / 2)
 				* ay);
 
-		if (coords.getX() + deltax <= 0)
-			coords.setX(Math.max(boundLeftDownFar.getX() + rad, coords.getX()
-					+ deltax));
-		else
-			coords.setX(Math.min(boundRightUpNear.getX() - rad, coords.getX()
-					+ deltax));
-		if (coords.getY() + deltay <= 0)
-			coords.setY(Math.max(boundRightUpNear.getY() + rad, coords.getY()
-					+ deltay));
-		else
-			coords.setY(Math.min(boundLeftDownFar.getY() - rad, coords.getY()
-					+ deltay));
-		
-		// рассчет угла поворота
-		
-		
+		float x = coords.getX();
+		float y = coords.getY();
+		coords.setX(Math.max(
+				Math.min(boundRightUpNear.getX() - rad, x + deltax),
+				boundLeftDownFar.getX()));
 
-		// Log.d("***************", Float.toString(deltax));
+		coords.setY(Math.max(
+				Math.min(boundLeftDownFar.getY() - rad, y + deltay),
+				boundRightUpNear.getY()));
+		
+		deltax = coords.getX() - x;
+		deltay = coords.getY() - y;
+
+		// рассчет угла поворота
+
+		float deltaYAngle = (float) (360 * (deltax % (2 * Math.PI * rad)) / 2 * Math.PI * rad);
+		float deltaXAngle = (float) (360 * (deltay % (2 * Math.PI * rad)) / 2 * Math.PI * rad);
+		coords.setXAngle((coords.getXAngle() + deltaXAngle) % 360);
+		coords.setYAngle((coords.getYAngle() + deltaYAngle) % 360);
+		
+		//Log.d("***************", Float.toString(coords.getX()));
 	}
 }
