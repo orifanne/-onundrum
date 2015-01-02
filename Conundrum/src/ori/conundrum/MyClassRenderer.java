@@ -43,7 +43,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	 */
 	private float[] mMVPMatrix = new float[16];
 
-	private final float lookDistance = 1.5f;
+	private final float lookDistance = 3f;
 
 	Model3D model;
 	Shader shader;
@@ -62,6 +62,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
 		// Set the background clear color to gray.
 		GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f);
+		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
 		final String vertexShader = "uniform mat4 u_MVPMatrix; \n"
 
@@ -128,141 +129,38 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 		shader = new Shader(vertexShader, fragmentShader);
 		texture = new Texture(context, R.drawable.back64);
-		float[] v = {
-				// coords
-				-2.0f, 1.0f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				0.0f, 0.0f,
-				// color
-				1.0f, 1.0f, 1.0f, 1.0f,
 
-				// coords
-				2.0f, 1.0f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				1.0f, 0.0f,
-				// color
-				1.0f, 1.0f, 1.0f, 1.0f,
+		// плоскость
+		/*
+		 * model = new Model3D(v, i, shader, texture); HashMap<Model3D,
+		 * ArrayList<Coords>> h = new HashMap<Model3D, ArrayList<Coords>>();
+		 * ArrayList<Coords> c = new ArrayList<Coords>(); c.add(new Coords(0, 0,
+		 * 0)); h.put(model, c); plane = new GameObject(new Coords(0, 0, 0), h);
+		 */
 
-				// coords
-				2.0f, -1.0f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				1.0f, 1.0f,
-				// color
-				1.0f, 1.0f, 1.0f, 1.0f,
+		// квадратик
+		/*
+		 * model = new Model3D(v1, i1, shader, texture); HashMap<Model3D,
+		 * ArrayList<Coords>> h1 = new HashMap<Model3D, ArrayList<Coords>>();
+		 * ArrayList<Coords> c1 = new ArrayList<Coords>(); c1.add(new Coords(0,
+		 * 0, 0)); h1.put(model, c1); square = new Ball(new Coords(0, 0, 0), h1,
+		 * new Coords(-2, 1, 0), new Coords(2, -1, 0.2f), 0.1f);
+		 */
 
-				// coords
-				-2.0f, 1.0f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				0.0f, 0.0f,
-				// color
-				1.0f, 1.0f, 1.0f, 1.0f,
-
-				// coords
-				2.0f, -1.0f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				1.0f, 1.0f,
-				// color
-				1.0f, 1.0f, 1.0f, 1.0f,
-
-				// coords
-				-2.0f, -1.0f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				1.0f, 1.0f,
-				// color
-				1.0f, 1.0f, 1.0f, 1.0f };
-
-		byte[] i = { 0, 1, 2, 0, 2, 3 };
-
-		model = new Model3D(v, i, shader, texture);
-		HashMap<Model3D, ArrayList<Coords>> h = new HashMap<Model3D, ArrayList<Coords>>();
-		ArrayList<Coords> c = new ArrayList<Coords>();
-		c.add(new Coords(0, 0, 0));
-		h.put(model, c);
-		plane = new GameObject(new Coords(0, 0, 0), h);
-
-		float[] v1 = {
-				// coords
-				-0.1f, 0.1f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				0.0f, 0.0f,
-				// color
-				0.0f, 0.0f, 0.0f, 1.0f,
-
-				// coords
-				0.1f, 0.1f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				1.0f, 0.0f,
-				// color
-				0.0f, 0.0f, 0.0f, 1.0f,
-
-				// coords
-				0.1f, -0.1f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				1.0f, 1.0f,
-				// color
-				0.0f, 0.0f, 0.0f, 1.0f,
-
-				// coords
-				-0.1f, 0.1f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				0.0f, 0.0f,
-				// color
-				0.0f, 0.0f, 0.0f, 1.0f,
-
-				// coords
-				0.1f, -0.1f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				1.0f, 1.0f,
-				// color
-				0.0f, 0.0f, 0.0f, 1.0f,
-
-				// coords
-				-0.1f, -0.1f, 0.0f,
-				// normal
-				0.0f, 0.0f, 1.0f,
-				// tex coords
-				1.0f, 1.0f,
-				// color
-				0.0f, 0.0f, 0.0f, 1.0f };
-
-		byte[] i1 = { 0, 1, 2, 0, 2, 3 };
-		model = new Model3D(v1, i1, shader, texture);
-		HashMap<Model3D, ArrayList<Coords>> h1 = new HashMap<Model3D, ArrayList<Coords>>();
-		ArrayList<Coords> c1 = new ArrayList<Coords>();
-		c1.add(new Coords(0, 0, 0));
-		h1.put(model, c1);
-		square = new Ball(new Coords(0, 0, 0), h1, new Coords(-2, 1, 0),
-				new Coords(2, -1, 0.2f), 0.1f);
-
+		// сфера
 		model = new Model3D(context, "icosphere.obj", shader, texture);
-		HashMap<Model3D, ArrayList<Coords>> h2 = new HashMap<Model3D, ArrayList<Coords>>();
-		ArrayList<Coords> c2 = new ArrayList<Coords>();
-		c2.add(new Coords(0, 0, 0));
-		h2.put(model, c1);
+		HashMap<Model3D, Coords> h2 = new HashMap<Model3D, Coords>();
+		Coords c2 = new Coords(0, 0, 0);
+		h2.put(model, c2);
 		sphere = new Ball(new Coords(0, 0, 0), h2, new Coords(-2, 1, 0),
 				new Coords(2, -1, 0.2f), 0.3f);
+
+		// плоскость
+		model = new Model3D(context, "plane.obj", shader, texture);
+		HashMap<Model3D, Coords> h1 = new HashMap<Model3D, Coords>();
+		Coords c1 = new Coords(0, 0, 0);
+		h1.put(model, c1);
+		plane = new GameObject(new Coords(0, 0, 0f), h1);
 	}
 
 	@Override
@@ -341,43 +239,38 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		// square.draw();
 		// sphere.countCoords();
 		// sphere.draw();
-		drawGameObject(plane);
+		
 		sphere.countCoords();
 		drawGameObject(sphere);
+		//drawGameObject(plane);
 	}
 
 	private void drawGameObject(GameObject o) {
 		Iterator<Model3D> it = o.getModels().keySet().iterator();
 		while (it.hasNext()) {
 			Model3D m = it.next();
-			ArrayList<Coords> c = o.getModels().get(m);
+			Coords c = o.getModels().get(m);
 
-			for (int i = 0; i < c.size(); i++) {
-				// Log.d("***************", Float.toString( c.get(i).getX()));
+			// Log.d("***************", Float.toString( c.get(i).getX()));
 
-				Matrix.setIdentityM(mModelMatrix, 0);
+			Matrix.setIdentityM(mModelMatrix, 0);
 
-				Matrix.translateM(mModelMatrix, 0, o.getCoords().getX(), o
-						.getCoords().getY(), c.get(i).getZ());
-				Matrix.rotateM(mModelMatrix, 0, o.getCoords().getXAngle(), 1,
-						0, 0);
-				Matrix.rotateM(mModelMatrix, 0, o.getCoords().getYAngle(), 0,
-						1, 0);
+			Matrix.translateM(mModelMatrix, 0, o.getCoords().getX(), o
+					.getCoords().getY(), c.getZ());
+			Matrix.rotateM(mModelMatrix, 0, o.getCoords().getXAngle(), 1, 0, 0);
+			Matrix.rotateM(mModelMatrix, 0, o.getCoords().getYAngle(), 0, 1, 0);
 
-				Matrix.translateM(mModelMatrix, 0, c.get(i).getX(), c.get(i)
-						.getY(), c.get(i).getZ());
-				Matrix.rotateM(mModelMatrix, 0, c.get(i).getXAngle(), 1, 0, 0);
-				Matrix.rotateM(mModelMatrix, 0, c.get(i).getYAngle(), 0, 1, 0);
+			Matrix.translateM(mModelMatrix, 0, c.getX(), c.getY(), c.getZ());
+			Matrix.rotateM(mModelMatrix, 0, c.getXAngle(), 1, 0, 0);
+			Matrix.rotateM(mModelMatrix, 0, c.getYAngle(), 0, 1, 0);
 
-				Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix,
-						0);
-				Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0,
-						mMVPMatrix, 0);
-				GLES20.glUniformMatrix4fv(shader.getMVPMatrixHandle(), 1,
-						false, mMVPMatrix, 0);
-				// !
-				m.draw();
-			}
+			Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+			Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix,
+					0);
+			GLES20.glUniformMatrix4fv(shader.getMVPMatrixHandle(), 1, false,
+					mMVPMatrix, 0);
+			// !
+			m.draw();
 
 		}
 

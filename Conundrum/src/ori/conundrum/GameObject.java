@@ -28,9 +28,9 @@ public class GameObject {
 	/**
 	 * Набор 3d-моделей с координатами.
 	 */
-	private HashMap<Model3D, ArrayList<Coords>> models;
+	private HashMap<Model3D, Coords> models;
 
-	public GameObject(Coords coords, HashMap<Model3D, ArrayList<Coords>> models) {
+	public GameObject(Coords coords, HashMap<Model3D, Coords> models) {
 		super();
 		this.coords = coords;
 		this.models = models;
@@ -39,6 +39,7 @@ public class GameObject {
 	/**
 	 * Отрисовать объект.
 	 */
+	/*
 	public void draw() {
 
 		Iterator<Model3D> it = models.keySet().iterator();
@@ -59,6 +60,7 @@ public class GameObject {
 		}
 
 	}
+	*/
 
 	public boolean isVisible() {
 		return isVisible;
@@ -76,7 +78,7 @@ public class GameObject {
 		this.coords = coords;
 	}
 
-	public HashMap<Model3D, ArrayList<Coords>> getModels() {
+	public HashMap<Model3D, Coords> getModels() {
 		return models;
 	}
 

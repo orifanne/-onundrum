@@ -28,8 +28,8 @@ public class Ball extends GameObject {
 	 * @param b2
 	 * @param rad
 	 */
-	Ball(Coords coords, HashMap<Model3D, ArrayList<Coords>> models, Coords b1,
-			Coords b2, float rad) {
+	Ball(Coords coords, HashMap<Model3D, Coords> models, Coords b1, Coords b2,
+			float rad) {
 		super(coords, models);
 		boundLeftDownFar = b1;
 		boundRightUpNear = b2;
@@ -67,6 +67,7 @@ public class Ball extends GameObject {
 
 		float x = coords.getX();
 		float y = coords.getY();
+
 		coords.setX(Math.max(
 				Math.min(boundRightUpNear.getX() - rad, x + deltax),
 				boundLeftDownFar.getX()));
@@ -74,17 +75,27 @@ public class Ball extends GameObject {
 		coords.setY(Math.max(
 				Math.min(boundLeftDownFar.getY() - rad, y + deltay),
 				boundRightUpNear.getY()));
-		
-		deltax = coords.getX() - x;
-		deltay = coords.getY() - y;
+
+		deltax = x - coords.getX();
+		deltay = y - coords.getY();
 
 		// рассчет угла поворота
 
-		float deltaYAngle = (float) (360 * (deltax % (2 * Math.PI * rad)) / 2 * Math.PI * rad);
-		float deltaXAngle = (float) (360 * (deltay % (2 * Math.PI * rad)) / 2 * Math.PI * rad);
+		float deltaYAngle = 0, deltaXAngle = 0;
+
+		float c = (float) (2 * Math.PI * rad);
+
+		if (deltax != 0)
+			deltaYAngle = (float) (360 * (deltax % c) / c);
+		if (deltay != 0)
+			deltaXAngle = (float) (360 * (deltay % c) / c);
+
+		// Log.d("***************",
+		// Float.toString(deltaXAngle) + " " + Float.toString(deltay));
+
 		coords.setXAngle((coords.getXAngle() + deltaXAngle) % 360);
 		coords.setYAngle((coords.getYAngle() + deltaYAngle) % 360);
-		
-		//Log.d("***************", Float.toString(coords.getX()));
+
+		// Log.d("***************", Float.toString(coords.getX()));
 	}
 }
