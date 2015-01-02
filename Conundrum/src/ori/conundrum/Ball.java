@@ -90,12 +90,7 @@ public class Ball extends GameObject {
 		if (deltay != 0)
 			deltaXAngle = (float) (360 * (deltay % c) / c);
 
-		// Log.d("***************",
-		// Float.toString(deltaXAngle) + " " + Float.toString(deltay));
-
 		coords.setXAngle((coords.getXAngle() + deltaXAngle) % 360);
 		coords.setYAngle((coords.getYAngle() + deltaYAngle) % 360);
-
-		// Log.d("***************", Float.toString(coords.getX()));
 	}
 }

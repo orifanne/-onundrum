@@ -1,6 +1,5 @@
 package ori.conundrum;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -18,6 +17,8 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	GameObject plane;
 	Ball square;
 	Ball sphere;
+
+	Coords globalLightPos = new Coords(2, 2, 2);
 
 	private final float angle = (float) 0.25;
 	/**
@@ -239,10 +240,10 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		// square.draw();
 		// sphere.countCoords();
 		// sphere.draw();
-		
+
 		sphere.countCoords();
 		drawGameObject(sphere);
-		//drawGameObject(plane);
+		drawGameObject(plane);
 	}
 
 	private void drawGameObject(GameObject o) {
@@ -250,8 +251,6 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		while (it.hasNext()) {
 			Model3D m = it.next();
 			Coords c = o.getModels().get(m);
-
-			// Log.d("***************", Float.toString( c.get(i).getX()));
 
 			Matrix.setIdentityM(mModelMatrix, 0);
 
@@ -269,6 +268,20 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 					0);
 			GLES20.glUniformMatrix4fv(shader.getMVPMatrixHandle(), 1, false,
 					mMVPMatrix, 0);
+
+			float[] light = { globalLightPos.getX(), globalLightPos.getY(),
+					globalLightPos.getZ(), 0 };
+			float[] inverted = new float[16];
+			Matrix.invertM(inverted, 0, mModelMatrix, 0);
+			Matrix.multiplyMV(light, 0, inverted, 0, light, 0);
+			GLES20.glUniform3f(shader.getLightPositionHandle(), light[0],
+					light[1], light[2]);
+
+			Log.d("******",
+					Float.toString(light[0]) + " " + Float.toString(light[1])
+							+ " " + Float.toString(light[2]) + " "
+							+ Float.toString(light[3]));
+
 			// !
 			m.draw();
 
