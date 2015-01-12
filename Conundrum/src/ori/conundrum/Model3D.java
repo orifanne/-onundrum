@@ -1,20 +1,7 @@
 package ori.conundrum;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-
 import android.content.Context;
-import android.content.res.AssetManager;
 import android.opengl.GLES20;
-import android.util.Log;
 
 /**
  * Представляет 3d-модель.
@@ -25,21 +12,9 @@ import android.util.Log;
 public class Model3D {
 
 	/**
-	 * Массив вершин. Данные о вершинах хранятся как array of structures.
-	 * Координаты, нормаль, текустурные координаты, цвет.
-	 */
-	// private float[] verticesData;
-	// private float[] verticesToDraw;
-	// FloatBuffer vertices;
-
-	/**
 	 * Координатная сетка.
 	 */
 	Mesh mesh;
-
-	// Массив индексов
-	// private byte[] indicesData;
-	// ByteBuffer indices;
 
 	private Shader shader;
 	private Texture texture;
@@ -61,25 +36,6 @@ public class Model3D {
 	private static final int SIZE = VERTEX_POS_SIZE + VERTEX_NORMAL_SIZE
 			+ VERTEX_TEXCOORD_SIZE + VERTEX_COLOR_SIZE;
 
-	/*
-	 * public Model3D(float[] vertices, byte[] indices, Shader shader, Texture
-	 * texture) { this.verticesData = vertices; // this.indicesData = indices;
-	 * this.shader = shader; this.texture = texture;
-	 * 
-	 * this.vertices = ByteBuffer .allocateDirect(verticesData.length *
-	 * (Float.SIZE / 8)) .order(ByteOrder.nativeOrder()).asFloatBuffer();
-	 * 
-	 * // ? this.vertices.put(verticesData).position(0);
-	 * 
-	 * /* this.indices = ByteBuffer.allocateDirect( indicesData.length *
-	 * (Byte.SIZE / 8)).order( ByteOrder.nativeOrder());
-	 * 
-	 * this.indices.put(indicesData).position(0);
-	 * 
-	 * 
-	 * // ? linkVertexBuffer(); // ? shader.linkTexture(texture); }
-	 */
-
 	/**
 	 * @param context
 	 * @param file
@@ -92,12 +48,6 @@ public class Model3D {
 		
 		this.shader = shader;
 		this.texture = texture;
-		
-		// ?
-		linkVertexBuffer();
-		// ?
-		shader.linkTexture(texture);
-
 	}
 
 	/**
@@ -144,60 +94,11 @@ public class Model3D {
 	/**
 	 * Отрисовать модель.
 	 */
-	/*
-	public void draw(Coords coords) {
-		int size = VERTEX_POS_SIZE + VERTEX_NORMAL_SIZE + VERTEX_TEXCOORD_SIZE
-				+ VERTEX_COLOR_SIZE;
-		// транспонирование
-
-		verticesToDraw = new float[verticesData.length];
-		for (int i = 0; i < verticesData.length; i++) {
-			int d = i % size;
-			switch (d) {
-			case 0:
-				verticesToDraw[i] = verticesData[i] + coords.getX();
-				break;
-			case 1:
-				verticesToDraw[i] = verticesData[i] + coords.getY();
-				break;
-			case 2:
-				verticesToDraw[i] = verticesData[i] + coords.getZ();
-				break;
-			default:
-				verticesToDraw[i] = verticesData[i];
-			}
-		}
-		this.vertices = ByteBuffer
-				.allocateDirect(verticesData.length * (Float.SIZE / 8))
-				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		this.vertices.put(verticesToDraw).position(0);
-		linkVertexBuffer();
-		shader.linkTexture(texture);
-
-		// GLES20.glDrawElements(GLES20.GL_TRIANGLES, indicesData.length,
-		// GLES20.GL_UNSIGNED_BYTE, indices);
-		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, verticesData.length / size);
-		unlinkVertexBuffer();
-	}
-	 */
-	
-	/**
-	 * Отрисовать модель.
-	 */
 	public void draw() {
-
-		/*
-		this.vertices = ByteBuffer
-				.allocateDirect(verticesData.length * (Float.SIZE / 8))
-				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		this.vertices.put(verticesData).position(0);
-		*/
 		
 		linkVertexBuffer();
 		shader.linkTexture(texture);
 
-		// GLES20.glDrawElements(GLES20.GL_TRIANGLES, indicesData.length,
-		// GLES20.GL_UNSIGNED_BYTE, indices);
 		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mesh.size() / SIZE);
 		unlinkVertexBuffer();
 	}

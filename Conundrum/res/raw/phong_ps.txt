@@ -1,0 +1,70 @@
+// Frag shader Phong Shading - Per-pixel lighting
+
+precision highp float;
+
+// depth texture
+uniform sampler2D u_shadowTexture; 
+
+varying vec3 v_Normal;
+
+uniform vec3 u_LightPosition;
+
+// shadow projection matrix
+uniform mat4 u_shadowProjMatrix;
+
+uniform vec3 u_Camera;
+
+// shadow coordinates
+varying vec4 v_shadowCoord;
+
+float getShadowFactor(vec4 lightZ) {
+	vec4 packedZValue = texture2D(u_shadowTexture, lightZ.st);
+
+	// unpack
+	const vec4 bitShifts = vec4(1.0 / (256.0 * 256.0 * 256.0),
+	1.0 / (256.0 * 256.0),
+	1.0 / 256.0, 1);
+	float shadow = dot(packedZValue , bitShifts);
+
+	return float(shadow > lightZ.z);
+}
+
+void main() {
+
+	vec3 n_Normal = normalize(v_Normal);
+	// вычисляем единичный вектор, указывающий из пикселя на
+	// источник света
+	vec3 lightvector = normalize(u_LightPosition - v_Position);
+	// вычисляем единичный вектор, указывающий из пикселя на камеру
+	vec3 lookvector = normalize(u_Camera - v_Position);
+	// определяем яркость фонового освещения
+	float ambient = 0.2;
+	// определяем коэффициент диффузного освещения
+	float k_diffuse = 0.8;
+	// определяем коэффициент зеркального освещения
+	float k_specular = 0.4;
+	// вычисляем яркость диффузного освещения пикселя
+	float diffuse = k_diffuse * max(dot(n_Normal, lightvector), 0.0);
+	// вычисляем вектор отраженного луча света
+	vec3 reflectvector = reflect(-lightvector, n_Normal);
+	// вычисляем яркость зеркального освещения пикселя
+	float specular = k_specular * pow( max(dot(lookvector,reflectvector),0.0), 40.0 );
+
+	// Shadow
+	float sValue = 1.0;
+	float sValue2 = 1.0;
+	if (v_shadowCoord.w > 0.0) {
+		vec4 lightZ = v_shadowCoord / v_shadowCoord.w;
+		lightZ = (lightZ + 1.0) / 2.0;
+
+		sValue = getShadowFactor(lightZ);
+
+		// scale the value from 0.5-1.0 to get a "softer" shadow for ambient
+		float newMin = 0.5;
+		float v1 = (1.0) / (1.0 - newMin);
+		float v2 = sValue / v1;
+		sValue2 = sValue + newMin;
+	}
+
+	gl_FragColor = (ambient * sValue2 + diffuse + specular) * v_Color * sValue;
+}

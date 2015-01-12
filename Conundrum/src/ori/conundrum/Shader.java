@@ -1,6 +1,12 @@
 package ori.conundrum;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import android.content.Context;
 import android.opengl.GLES20;
+import android.util.Log;
 
 public class Shader {
 
@@ -21,7 +27,7 @@ public class Shader {
 
 	/** Ссылка на атрибут координат цвета */
 	private int colorHandle;
-	
+
 	private int cameraHandle;
 	private int lightPositionHandle;
 
@@ -108,6 +114,46 @@ public class Shader {
 		getHandles();
 	}
 
+	// Takes in ids for files to be read
+	public Shader(int vID, int fID, Context context) {
+		StringBuffer vs = new StringBuffer();
+		StringBuffer fs = new StringBuffer();
+		// read the files
+		try {
+			// Read VS first
+			InputStream inputStream = context.getResources().openRawResource(
+					vID);
+			// setup Bufferedreader
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					inputStream));
+
+			String read = in.readLine();
+			while (read != null) {
+				vs.append(read + "\n");
+				read = in.readLine();
+			}
+
+			vs.deleteCharAt(vs.length() - 1);
+
+			// Now read FS
+			inputStream = context.getResources().openRawResource(fID);
+			// setup Bufferedreader
+			in = new BufferedReader(new InputStreamReader(inputStream));
+
+			read = in.readLine();
+			while (read != null) {
+				fs.append(read + "\n");
+				read = in.readLine();
+			}
+
+			fs.deleteCharAt(fs.length() - 1);
+		} catch (Exception e) {
+			Log.d("ERROR-readingShader",
+					"Could not read shader: " + e.getLocalizedMessage());
+		}
+		createProgram(vs.toString(), fs.toString());
+	}
+
 	/**
 	 * Делает шейдерную программу данного класса активной.
 	 */
@@ -150,8 +196,7 @@ public class Shader {
 		normalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
 		textureHandle = GLES20.glGetAttribLocation(programHandle, "a_Texture");
 		colorHandle = GLES20.glGetAttribLocation(programHandle, "a_Color");
-		cameraHandle = GLES20.glGetUniformLocation(programHandle,
-				"u_Camera");
+		cameraHandle = GLES20.glGetUniformLocation(programHandle, "u_Camera");
 		lightPositionHandle = GLES20.glGetUniformLocation(programHandle,
 				"u_LightPosition");
 	}
