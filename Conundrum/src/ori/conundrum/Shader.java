@@ -16,6 +16,9 @@ public class Shader {
 	/** Ссылка на униформу матрицы модели-вида-проекции */
 	private int MVPMatrixHandle;
 
+	/** Ссылка на униформу матрицы проекции теней */
+	private int shodowProjMatrixHandle;
+
 	/** Ссылка на атрибут координат */
 	private int positionHandle;
 
@@ -28,7 +31,10 @@ public class Shader {
 	/** Ссылка на атрибут координат цвета */
 	private int colorHandle;
 
+	/** Ссылка на униформу координат камеры */
 	private int cameraHandle;
+
+	/** Ссылка на униформу координат источника света */
 	private int lightPositionHandle;
 
 	/**
@@ -191,6 +197,8 @@ public class Shader {
 	private void getHandles() {
 		MVPMatrixHandle = GLES20.glGetUniformLocation(programHandle,
 				"u_MVPMatrix");
+		shodowProjMatrixHandle = GLES20.glGetUniformLocation(programHandle,
+				"u_shadowProjMatrix");
 		positionHandle = GLES20
 				.glGetAttribLocation(programHandle, "a_Position");
 		normalHandle = GLES20.glGetAttribLocation(programHandle, "a_Normal");
@@ -231,5 +239,9 @@ public class Shader {
 
 	public int getLightPositionHandle() {
 		return lightPositionHandle;
+	}
+
+	public int getShodowProjMatrixHandle() {
+		return shodowProjMatrixHandle;
 	}
 }

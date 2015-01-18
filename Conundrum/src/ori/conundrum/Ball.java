@@ -1,6 +1,5 @@
 package ori.conundrum;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.util.Log;
@@ -37,15 +36,7 @@ public class Ball extends GameObject {
 	}
 
 	public void countCoords() {
-		/*
-		 * float angleX, angleY; if (MainActivity.xAngle == 0) angleX = (float)
-		 * (Math.PI * 0.5 + MainActivity.xAngle); else angleX = (float) (Math.PI
-		 * * 0.5 + (MainActivity.xAngle / Math .abs(MainActivity.xAngle))
-		 * (Math.abs(Math.min(Math.abs(MainActivity.xAngle), Math.PI -
-		 * Math.abs(MainActivity.xAngle)))));
-		 * 
-		 * angleY = (float) (Math.PI * 0.5 + MainActivity.yAngle);
-		 */
+
 		float angleX = MainActivity.xAngle;
 		float angleY = MainActivity.yAngle;
 
@@ -75,6 +66,11 @@ public class Ball extends GameObject {
 		coords.setY(Math.max(
 				Math.min(boundLeftDownFar.getY() - rad, y + deltay),
 				boundRightUpNear.getY()));
+
+		/*Log.d("**********",
+				Float.toString(coords.getX()) + " "
+						+ Float.toString(coords.getY()) + " "
+						+ Float.toString(coords.getZ()));*/
 
 		deltax = x - coords.getX();
 		deltay = y - coords.getY();
