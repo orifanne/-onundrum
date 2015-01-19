@@ -8,6 +8,13 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.util.Log;
 
+/**
+ * Шейдер
+ * 
+ * @author orifanne
+ * 
+ */
+
 public class Shader {
 
 	/** Ссылка на шейдерную программу */
@@ -47,6 +54,53 @@ public class Shader {
 		// вызываем метод, создающий шейдерную программу
 		// при этом заполняется поле program_Handle
 		createProgram(vertexShaderCode, fragmentShaderCode);
+	}
+
+	/**
+	 * @param vID
+	 *            индекс файла с кодом вершинного шейдера
+	 * @param fID
+	 *            индекс файла с кодом фрагментного шейдера
+	 * @param context
+	 *            контекст
+	 */
+	public Shader(int vID, int fID, Context context) {
+		StringBuffer vs = new StringBuffer();
+		StringBuffer fs = new StringBuffer();
+		// read the files
+		try {
+			// Read VS first
+			InputStream inputStream = context.getResources().openRawResource(
+					vID);
+			// setup Bufferedreader
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					inputStream));
+
+			String read = in.readLine();
+			while (read != null) {
+				vs.append(read + "\n");
+				read = in.readLine();
+			}
+
+			vs.deleteCharAt(vs.length() - 1);
+
+			// Now read FS
+			inputStream = context.getResources().openRawResource(fID);
+			// setup Bufferedreader
+			in = new BufferedReader(new InputStreamReader(inputStream));
+
+			read = in.readLine();
+			while (read != null) {
+				fs.append(read + "\n");
+				read = in.readLine();
+			}
+
+			fs.deleteCharAt(fs.length() - 1);
+		} catch (Exception e) {
+			Log.d("ERROR-readingShader",
+					"Could not read shader: " + e.getLocalizedMessage());
+		}
+		createProgram(vs.toString(), fs.toString());
 	}
 
 	/**
@@ -120,46 +174,6 @@ public class Shader {
 		getHandles();
 	}
 
-	// Takes in ids for files to be read
-	public Shader(int vID, int fID, Context context) {
-		StringBuffer vs = new StringBuffer();
-		StringBuffer fs = new StringBuffer();
-		// read the files
-		try {
-			// Read VS first
-			InputStream inputStream = context.getResources().openRawResource(
-					vID);
-			// setup Bufferedreader
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					inputStream));
-
-			String read = in.readLine();
-			while (read != null) {
-				vs.append(read + "\n");
-				read = in.readLine();
-			}
-
-			vs.deleteCharAt(vs.length() - 1);
-
-			// Now read FS
-			inputStream = context.getResources().openRawResource(fID);
-			// setup Bufferedreader
-			in = new BufferedReader(new InputStreamReader(inputStream));
-
-			read = in.readLine();
-			while (read != null) {
-				fs.append(read + "\n");
-				read = in.readLine();
-			}
-
-			fs.deleteCharAt(fs.length() - 1);
-		} catch (Exception e) {
-			Log.d("ERROR-readingShader",
-					"Could not read shader: " + e.getLocalizedMessage());
-		}
-		createProgram(vs.toString(), fs.toString());
-	}
-
 	/**
 	 * Делает шейдерную программу данного класса активной.
 	 */
@@ -209,38 +223,65 @@ public class Shader {
 				"u_LightPosition");
 	}
 
+	/**
+	 * @return ссылка на униформу матрицы модели-вида-проекции
+	 */
 	public int getMVPMatrixHandle() {
 		return MVPMatrixHandle;
 	}
 
+	/**
+	 * @return ссылка на атрибут координат
+	 */
 	public int getPositionHandle() {
 		return positionHandle;
 	}
 
+	/**
+	 * @return ссылка на атрибут нормали
+	 */
 	public int getNormalHandle() {
 		return normalHandle;
 	}
 
+	/**
+	 * @return ссылка на атрибут координат текстуры
+	 */
 	public int getTextureHandle() {
 		return textureHandle;
 	}
 
+	/**
+	 * @return ссылка на атрибут координат цвета
+	 */
 	public int getColorHandle() {
 		return colorHandle;
 	}
 
+	/**
+	 * @return ссылка на шейдерную программу
+	 */
 	public int getProgramHandle() {
 		return programHandle;
 	}
 
+	/**
+	 * @return ссылка на униформу координат камеры
+	 */
 	public int getCameraHandle() {
 		return cameraHandle;
 	}
 
+	/**
+	 * @return ссылка на униформу координат источника света
+	 */
 	public int getLightPositionHandle() {
 		return lightPositionHandle;
 	}
 
+	/**
+	 * @return ссылка на униформу матрицы проекции теней
+	 */
 	public int getShodowProjMatrixHandle() {
 		return shodowProjMatrixHandle;
 	}

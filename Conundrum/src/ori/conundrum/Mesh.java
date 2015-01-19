@@ -11,6 +11,13 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.res.AssetManager;
 
+/**
+ * 3D сетка
+ * 
+ * @author orifanne
+ * 
+ */
+
 public class Mesh {
 
 	/**
@@ -26,9 +33,9 @@ public class Mesh {
 
 	/**
 	 * @param context
+	 *            контекст
 	 * @param file
-	 * @param shader
-	 * @param texture
+	 *            obj файл
 	 */
 	public Mesh(Context context, String file) {
 		try {
@@ -55,11 +62,11 @@ public class Mesh {
 							.parseFloat(s[2]), Float.parseFloat(s[3])));
 				}
 				// текстурные координаты
-				/*if (line.startsWith("vt ")) {
-					String[] s = line.split(" ");
-					vt.add(new Coords(Float.parseFloat(s[1]), Float
-							.parseFloat(s[2]), 0.0f));
-				}*/
+				/*
+				 * if (line.startsWith("vt ")) { String[] s = line.split(" ");
+				 * vt.add(new Coords(Float.parseFloat(s[1]), Float
+				 * .parseFloat(s[2]), 0.0f)); }
+				 */
 				// грань
 				if (line.startsWith("f ")) {
 					String[] s = line.split(" ");
@@ -110,10 +117,16 @@ public class Mesh {
 		}
 	}
 
+	/**
+	 * @return упакованные данные о вершинах
+	 */
 	public FloatBuffer getVertices() {
 		return vertices;
 	}
 
+	/**
+	 * @return длина массива verticesData
+	 */
 	public int size() {
 		return verticesData.length;
 	}

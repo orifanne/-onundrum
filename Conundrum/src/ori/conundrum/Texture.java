@@ -6,11 +6,15 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
+/**
+ * Текстура
+ * 
+ * @author orifanne
+ * 
+ */
 public class Texture {
 
-	/**
-	 * Имя текстуры
-	 */
+	/** Имя текстуры */
 	private int name;
 
 	/**
@@ -57,6 +61,9 @@ public class Texture {
 		GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
 	}
 
+	/**
+	 * @return имя текстуры
+	 */
 	public int getName() {
 		return name;
 	}

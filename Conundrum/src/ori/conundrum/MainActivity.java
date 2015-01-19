@@ -17,38 +17,38 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
+	/** Промежуток времени, через который обновляется кадр (в миллисекундах) */
 	public static int deltaT = 60;
-	TextView tvText;
+	/** Менеджер датчиков */
 	SensorManager sensorManager;
+	/** Акселерометр */
 	Sensor sensorAccel;
-	Sensor sensorLinAccel;
-	Sensor sensorGravity;
+	/** Датчик магнитного поля */
 	Sensor sensorMagnet;
 
-	StringBuilder sb = new StringBuilder();
-
-	// надо ли разворачивать оси, потому что ориентация по умолчанию портретная
+	/** Надо ли разворачивать оси, потому что ориентация по умолчанию портретная */
 	boolean flip = false;
 
+	/** Угол наклона относительно оси X (в ) */
 	public static float xAngle;
+	/** Угол наклона относительно оси Y (в ) */
 	public static float yAngle;
 
+	/** Таймер (для задания обновления информации с датчиков) */
 	Timer timer;
 
+	/** Текущие значения на акселерометре */
 	float[] valuesAccel = new float[3];
-	float[] valuesLinAccel = new float[3];
-	float[] valuesGravity = new float[3];
+	/** Текущие значения на датчике магнитного поля */
 	float[] valuesMagnet = new float[3];
 
-	float[] r = new float[9];
-
+	/** Текущая матрица поворота */
 	float[] rotationCurrent = new float[3];
 
-	// создадим ссылку на экземпляр нашего класса MyClassSurfaceView
+	/** Renderer */
 	private GLSurfaceView mGLSurfaceView;
 
 	@Override
@@ -64,9 +64,6 @@ public class MainActivity extends Activity {
 
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		sensorLinAccel = sensorManager
-				.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-		sensorGravity = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 		sensorMagnet = sensorManager
 				.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
@@ -121,10 +118,6 @@ public class MainActivity extends Activity {
 		mGLSurfaceView.onResume();
 		sensorManager.registerListener(listener, sensorAccel,
 				SensorManager.SENSOR_DELAY_NORMAL);
-		sensorManager.registerListener(listener, sensorLinAccel,
-				SensorManager.SENSOR_DELAY_NORMAL);
-		sensorManager.registerListener(listener, sensorGravity,
-				SensorManager.SENSOR_DELAY_NORMAL);
 		sensorManager.registerListener(listener, sensorMagnet,
 				SensorManager.SENSOR_DELAY_NORMAL);
 
@@ -143,7 +136,11 @@ public class MainActivity extends Activity {
 		timer.schedule(task, 0, deltaT);
 	}
 
+	/**
+	 * Обновить информацию об углах наклона устройства
+	 */
 	void getDeviceOrientation() {
+		float[] r = new float[9];
 		SensorManager.getRotationMatrix(r, null, valuesAccel, valuesMagnet);
 		SensorManager.getOrientation(r, rotationCurrent);
 		if (flip) {
@@ -164,20 +161,7 @@ public class MainActivity extends Activity {
 		timer.cancel();
 	}
 
-	String format(float values[]) {
-		return String.format("%1$.1f\t\t%2$.1f\t\t%3$.1f", values[0],
-				values[1], values[2]);
-	}
-
-	void showInfo() {
-		sb.setLength(0);
-		sb.append("Accelerometer: " + format(valuesAccel))
-				.append("\n\nLin accel : " + format(valuesLinAccel))
-				.append("\nGravity : " + format(valuesGravity))
-				.append("\n\nMagnetic : " + format(valuesMagnet));
-		tvText.setText(sb);
-	}
-
+	/** Слушатель изменений датчиков */
 	SensorEventListener listener = new SensorEventListener() {
 
 		@Override
@@ -190,16 +174,6 @@ public class MainActivity extends Activity {
 			case Sensor.TYPE_ACCELEROMETER:
 				for (int i = 0; i < 3; i++) {
 					valuesAccel[i] = event.values[i];
-				}
-				break;
-			case Sensor.TYPE_LINEAR_ACCELERATION:
-				for (int i = 0; i < 3; i++) {
-					valuesLinAccel[i] = event.values[i];
-				}
-				break;
-			case Sensor.TYPE_GRAVITY:
-				for (int i = 0; i < 3; i++) {
-					valuesGravity[i] = event.values[i];
 				}
 				break;
 			case Sensor.TYPE_MAGNETIC_FIELD:

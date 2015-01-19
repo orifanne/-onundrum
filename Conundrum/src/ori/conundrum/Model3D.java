@@ -11,41 +11,55 @@ import android.opengl.GLES20;
  */
 public class Model3D {
 
-	/**
-	 * Координатная сетка.
-	 */
+	/** Координатная сетка */
 	Mesh mesh;
 
+	/** Шейдер */
 	private Shader shader;
+	/** Текстура */
 	private Texture texture;
 
+	/** Размер (в элементах) инормации о координатах вершины в массиве */
 	private static final int VERTEX_POS_SIZE = 3;
+	/** Размер (в элементах) инормации о координатах нормали в массиве */
 	private static final int VERTEX_NORMAL_SIZE = 3;
+	/** Размер (в элементах) инормации о координатах текстуры в массиве */
 	private static final int VERTEX_TEXCOORD_SIZE = 2;
+	/** Размер (в элементах) инормации о цвете вершины в массиве */
 	private static final int VERTEX_COLOR_SIZE = 4;
 
+	/** Размер (в элементах) cмещения инормации о координатах вершины в массиве */
 	private static final int VERTEX_POS_OFFSET = 0;
+	/** Размер (в элементах) cмещения инормации о координатах нормали в массиве */
 	private static final int VERTEX_NORMAL_OFFSET = 3;
+	/** Размер (в элементах) cмещения инормации о координатах текстуры в массиве */
 	private static final int VERTEX_TEXCOORD_OFFSET = 6;
+	/** Размер (в элементах) cмещения инормации о цвете вершины в массиве */
 	private static final int VERTEX_COLOR_OFFSET = 8;
 
+	/** Размер (в байтах) инормации о всех атрибутах вершины в массиве */
 	private static final int VERTEX_ATTRIB_SIZE = (VERTEX_POS_SIZE
 			+ VERTEX_NORMAL_SIZE + VERTEX_TEXCOORD_SIZE + VERTEX_COLOR_SIZE)
 			* (Float.SIZE / 8);
 
+	/** Размер (в элементах) инормации о всех атрибутах вершины в массиве */
 	private static final int SIZE = VERTEX_POS_SIZE + VERTEX_NORMAL_SIZE
 			+ VERTEX_TEXCOORD_SIZE + VERTEX_COLOR_SIZE;
 
 	/**
 	 * @param context
+	 *            контекст
 	 * @param file
+	 *            obj файл с 3d сеткой
 	 * @param shader
+	 *            шейдер
 	 * @param texture
+	 *            текстура
 	 */
 	public Model3D(Context context, String file, Shader shader, Texture texture) {
 
 		mesh = new Mesh(context, file);
-		
+
 		this.shader = shader;
 		this.texture = texture;
 	}
@@ -95,7 +109,7 @@ public class Model3D {
 	 * Отрисовать модель.
 	 */
 	public void draw() {
-		
+
 		linkVertexBuffer();
 		shader.linkTexture(texture);
 
@@ -103,6 +117,10 @@ public class Model3D {
 		unlinkVertexBuffer();
 	}
 
+	/**
+	 * Удаляет связи между буфером координат вершин vertices и атрибутами в
+	 * шейдере
+	 */
 	private void unlinkVertexBuffer() {
 		GLES20.glDisableVertexAttribArray(shader.getPositionHandle());
 		GLES20.glDisableVertexAttribArray(shader.getNormalHandle());
@@ -110,10 +128,18 @@ public class Model3D {
 		GLES20.glDisableVertexAttribArray(shader.getColorHandle());
 	}
 
+	/**
+	 * @param shader
+	 *            шейдер
+	 */
 	public void setShader(Shader shader) {
 		this.shader = shader;
 	}
 
+	/**
+	 * @param texture
+	 *            текстура
+	 */
 	public void setTexture(Texture texture) {
 		this.texture = texture;
 	}

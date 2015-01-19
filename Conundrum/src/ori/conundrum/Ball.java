@@ -2,7 +2,12 @@ package ori.conundrum;
 
 import java.util.HashMap;
 
-import android.util.Log;
+/**
+ * Металлический шарик.
+ * 
+ * @author orifanne
+ * 
+ */
 
 public class Ball extends GameObject {
 
@@ -17,15 +22,22 @@ public class Ball extends GameObject {
 	/** Коэффициент трения качения */
 	private float f = 0.005f;
 
+	/** Граница объемной области передвижения слева снизу дальняя */
 	private Coords boundLeftDownFar;
+	/** Граница объемной области передвижения справа сверху ближняя */
 	private Coords boundRightUpNear;
 
 	/**
 	 * @param coords
+	 *            координаты центра
 	 * @param models
+	 *            набор составляющих 3D моделек с координатами
 	 * @param b1
+	 *            граница
 	 * @param b2
+	 *            граница
 	 * @param rad
+	 *            радиус
 	 */
 	Ball(Coords coords, HashMap<Model3D, Coords> models, Coords b1, Coords b2,
 			float rad) {
@@ -35,6 +47,10 @@ public class Ball extends GameObject {
 		this.rad = rad;
 	}
 
+	/**
+	 * Пересчитать координаты центра в соответствии с текущим состоянием (наклон
+	 * устройства)
+	 */
 	public void countCoords() {
 
 		float angleX = MainActivity.xAngle;
@@ -67,10 +83,10 @@ public class Ball extends GameObject {
 				Math.min(boundLeftDownFar.getY() - rad, y + deltay),
 				boundRightUpNear.getY()));
 
-		/*Log.d("**********",
-				Float.toString(coords.getX()) + " "
-						+ Float.toString(coords.getY()) + " "
-						+ Float.toString(coords.getZ()));*/
+		/*
+		 * Log.d("**********", Float.toString(coords.getX()) + " " +
+		 * Float.toString(coords.getY()) + " " + Float.toString(coords.getZ()));
+		 */
 
 		deltax = x - coords.getX();
 		deltay = y - coords.getY();

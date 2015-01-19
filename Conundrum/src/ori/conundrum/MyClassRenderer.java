@@ -12,40 +12,47 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
 
+/**
+ * Организует рендеринг
+ * 
+ * @author orifanne
+ * 
+ */
 public class MyClassRenderer implements GLSurfaceView.Renderer {
 
+	/** Тэг для дебага */
 	private static final String TAG = "MyClassRenderer";
 
-	/**
-	 * Current display sizes
-	 */
+	/** Current display width */
 	private int mDisplayWidth;
+	/** Current display height */
 	private int mDisplayHeight;
 
-	// light parameters
+	/** Координаты источника света */
 	private float[] lightPos = { 2.0f, 2.0f, 2.0f, 1, // position
 			0.0f, 0.0f, 0.0f, // center (where the light is looking at)
 			0.0f, 1.0f, 0.0f, // up vector
 	};
 
-	// RENDER TO TEXTURE VARIABLES
+	/** RENDER TO TEXTURE VARIABLES */
 	int[] fboId;
 	int[] depthTextureId;
 	int[] renderTextureId;
-	/**
-	 * Current shadow map sizes
-	 */
+
+	/** Current shadow map width */
 	private int mShadowMapWidth;
+	/** Current shadow map height */
 	private int mShadowMapHeight;
 
-	// array of shaders
+	/** Array of shaders */
 	Shader _shaders[] = new Shader[3];
 
-	/** Shader code **/
+	/** Vertex shader codes (files indices) **/
 	private int[] vShaders;
+	/** Fragment shader codes (files indices) **/
 	private int[] fShaders;
 
-	// shader constants
+	/** Shader ids */
 	private final int GOURAUD_SHADER = 0;
 	private final int PHONG_SHADER = 1;
 	private final int DEPTHMAP_SHADER = 2; // generates the depth map
@@ -54,17 +61,20 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	GameObject plane;
 	Ball sphere;
 
-	Coords globalLightPos = new Coords(2, 2, 2);
-
-	// Matrices for the camera
+	/** Матрица модели (для камеры и света сразу) */
 	private float[] mModelMatrix = new float[16];
+	/** Матрица вида для камеры */
 	private float[] mViewMatrix = new float[16];
+	/** Матрица проекции для камеры */
 	private float[] mProjectionMatrix = new float[16];
+	/** Матрица модели-вида-проекции для камеры */
 	private float[] mMVPMatrix = new float[16];
 
-	// Matrices for the light
+	/** Матрица вида для света */
 	private float[] lViewMatrix = new float[16];
+	/** Матрица проекции для света */
 	private float[] lProjectionMatrix = new float[16];
+	/** Матрица модели-вида-проекции для света */
 	private float[] lMVPMatrix = new float[16];
 
 	Model3D model;
@@ -73,9 +83,6 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 	Context context;
 
-	/**
-	 * Initialize the model data.
-	 */
 	public MyClassRenderer(Context context) {
 		this.context = context;
 
@@ -377,7 +384,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	}
 
 	/**
-	 * Renders to a texture
+	 * Renders shadow map to a texture
 	 */
 	private void renderShadowMap() {
 		// bind the generated framebuffer
@@ -390,7 +397,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	}
 
 	/**
-	 * Renders the scene with the shadow 2nd pass
+	 * Renders the scene with the shadows (only after renderShadowMap())
 	 */
 	private void renderScene() {
 
