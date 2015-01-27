@@ -1,0 +1,80 @@
+// Frag shader Phong Shading - Per-pixel lighting
+
+precision highp float;
+
+// depth texture
+uniform sampler2D u_shadowTexture; 
+
+varying vec3 v_Normal;
+varying vec4 v_shadowCoord;
+varying vec3 v_Position;
+varying vec4 v_Color;
+
+uniform vec3 u_LightPosition;
+uniform mat4 u_shadowProjMatrix;
+uniform vec3 u_Camera;
+
+// unpack colour to depth value
+float unpack (vec4 colour)
+{
+	const vec4 bitShifts = vec4(1.0 / (256.0 * 256.0 * 256.0),
+	1.0 / (256.0 * 256.0), 1.0 / 256.0, 1);
+	return dot(colour , bitShifts);
+}
+
+float getShadowFactor(vec4 lightZ) {
+	vec4 packedZValue = texture2D(u_shadowTexture, lightZ.st);
+
+	// unpack
+	const vec4 bitShifts = vec4(1.0 / (256.0 * 256.0 * 256.0),
+	1.0 / (256.0 * 256.0), 1.0 / 256.0, 1);
+	float shadow = dot(packedZValue , bitShifts);
+
+	return float(shadow > lightZ.z);
+}
+
+float shadowSimple()
+{
+	vec4 shadowMapPosition = v_shadowCoord / v_shadowCoord.w;
+	
+	shadowMapPosition = (shadowMapPosition + 1.0) / 2.0;
+	
+	vec4 packedZValue = texture2D(u_shadowTexture, shadowMapPosition.st);
+	
+	float distanceFromLight = unpack(packedZValue);
+	
+	//add bias to reduce shadow acne (error margin)
+	float bias = 0.0005;
+	
+	//1.0 = not in shadow (fragmant is closer to light than the value stored in shadow map)
+	//0.0 = in shadow
+	return float(distanceFromLight > shadowMapPosition.z - bias);
+}
+
+void main() {
+
+	vec3 n_Normal = normalize(v_Normal);
+	vec3 lightVec = u_LightPosition - v_Position;
+	lightVec = normalize(lightVec);
+	
+	// Phong shading with diffuse and ambient component
+	float diffuseComponent = max(0.0, dot(lightVec, n_Normal));
+	float ambientComponent = 0.3;
+	
+	// Shadow
+	float shadow = 1.0;
+	
+	//if the fragment is not behind light view frustum
+	if (v_shadowCoord.w > 0.0) {
+	
+		shadow = shadowSimple();
+		
+		//scale 0.0-1.0 to 0.2-1.0
+		//otherways everything in shadow would be black
+		shadow = (shadow * 0.8) + 0.2;
+		
+	}
+	
+	// Final output color with shadow and lighting
+	gl_FragColor = (v_Color * (diffuseComponent + ambientComponent) * shadow); 
+}

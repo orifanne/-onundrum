@@ -22,6 +22,27 @@ float unpack (vec4 colour)
 	return dot(colour , bitShifts);
 }
 
+//Calculate variable bias - from http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping
+float calcBias()
+{
+	float bias;
+	vec3 n = normalize(v_Normal);
+	
+	// Direction of the light (from the fragment to the light)
+	vec3 l = normalize(u_LightPosition);
+	
+	// Cosine of the angle between the normal and the light direction,
+	// clamped above 0
+	// - light is at the vertical of the triangle -> 1
+	// - light is perpendiular to the triangle -> 0
+	// - light is behind the triangle -> 0
+	float cosTheta = clamp( dot( n,l ), 0.0, 1.0 );
+	
+	bias = 0.0001 * tan(acos(cosTheta));
+	bias = clamp(bias, 0.0, 0.01);
+	return bias;
+}
+
 float getShadowFactor(vec4 lightZ) {
 	vec4 packedZValue = texture2D(u_shadowTexture, lightZ.st);
 
@@ -36,11 +57,16 @@ float getShadowFactor(vec4 lightZ) {
 float shadowSimple()
 {
 	vec4 shadowMapPosition = v_shadowCoord / v_shadowCoord.w;
+	
 	shadowMapPosition = (shadowMapPosition + 1.0) / 2.0;
+	
 	vec4 packedZValue = texture2D(u_shadowTexture, shadowMapPosition.st);
+	
 	float distanceFromLight = unpack(packedZValue);
+	
 	//add bias to reduce shadow acne (error margin)
-	float bias = 0.0005;
+	float bias = calcBias();
+	
 	//1.0 = not in shadow (fragmant is closer to light than the value stored in shadow map)
 	//0.0 = in shadow
 	return float(distanceFromLight > shadowMapPosition.z - bias);
@@ -55,15 +81,21 @@ void main() {
 	// Phong shading with diffuse and ambient component
 	float diffuseComponent = max(0.0, dot(lightVec, n_Normal));
 	float ambientComponent = 0.3;
+	
 	// Shadow
 	float shadow = 1.0;
+	
 	//if the fragment is not behind light view frustum
 	if (v_shadowCoord.w > 0.0) {
+	
 		shadow = shadowSimple();
+		
 		//scale 0.0-1.0 to 0.2-1.0
 		//otherways everything in shadow would be black
 		shadow = (shadow * 0.8) + 0.2;
+		
 	}
+	
 	// Final output color with shadow and lighting
 	gl_FragColor = (v_Color * (diffuseComponent + ambientComponent) * shadow); 
 }

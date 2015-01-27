@@ -45,7 +45,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	private int mShadowMapHeight;
 
 	/** Array of shaders */
-	Shader _shaders[] = new Shader[3];
+	Shader _shaders[] = new Shader[4];
 
 	/** Vertex shader codes (files indices) **/
 	private int[] vShaders;
@@ -53,10 +53,10 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	private int[] fShaders;
 
 	/** Shader ids */
-	private final int GOURAUD_SHADER = 0;
-	private final int PHONG_SHADER = 1;
-	private final int DEPTHMAP_SHADER = 2; // generates the depth map
-	private final int OLD_SHADER = 2;
+	private final int OLD_SHADER = 0;
+	private final int DEPTHMAP_SHADER = 1; // generates the depth map
+	private final int SIMPLE_SHADOW_CONSTANT_BIAS_SHADER = 2;
+	private final int SIMPLE_SHADOW_DYNAMIC_BIAS_SHADER = 3;
 
 	GameObject plane;
 	Ball sphere;
@@ -78,7 +78,6 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	private float[] lMVPMatrix = new float[16];
 
 	Model3D model;
-	Shader shader;
 	Texture texture;
 
 	Context context;
@@ -87,16 +86,16 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		this.context = context;
 
 		// setup all the shaders
-		vShaders = new int[3];
-		fShaders = new int[3];
+		vShaders = new int[4];
+		fShaders = new int[4];
 
-		// basic - just gouraud shading
-		vShaders[GOURAUD_SHADER] = R.raw.gouraud_vs;
-		fShaders[GOURAUD_SHADER] = R.raw.gouraud_ps;
+		// phong shading with simple shadow constant bias
+		vShaders[SIMPLE_SHADOW_CONSTANT_BIAS_SHADER] = R.raw.simple_shadow;
+		fShaders[SIMPLE_SHADOW_CONSTANT_BIAS_SHADER] = R.raw.simple_shadow_constant_bias_ps;
 
-		// phong shading
-		vShaders[PHONG_SHADER] = R.raw.phong_vs;
-		fShaders[PHONG_SHADER] = R.raw.phong_ps;
+		// phong shading with simple shadow dynamic bias
+		vShaders[SIMPLE_SHADOW_DYNAMIC_BIAS_SHADER] = R.raw.simple_shadow;
+		fShaders[SIMPLE_SHADOW_DYNAMIC_BIAS_SHADER] = R.raw.simple_shadow_dynamic_bias_ps;
 
 		// Depth map
 		vShaders[DEPTHMAP_SHADER] = R.raw.depth_vs;
@@ -119,10 +118,12 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 		// initialize shaders
 		try {
-			_shaders[GOURAUD_SHADER] = new Shader(vShaders[GOURAUD_SHADER],
-					fShaders[GOURAUD_SHADER], context); // gouraud
-			_shaders[PHONG_SHADER] = new Shader(vShaders[PHONG_SHADER],
-					fShaders[PHONG_SHADER], context); // phong
+			_shaders[SIMPLE_SHADOW_CONSTANT_BIAS_SHADER] = new Shader(
+					vShaders[SIMPLE_SHADOW_CONSTANT_BIAS_SHADER],
+					fShaders[SIMPLE_SHADOW_CONSTANT_BIAS_SHADER], context); // gouraud
+			_shaders[SIMPLE_SHADOW_DYNAMIC_BIAS_SHADER] = new Shader(
+					vShaders[SIMPLE_SHADOW_DYNAMIC_BIAS_SHADER],
+					fShaders[SIMPLE_SHADOW_DYNAMIC_BIAS_SHADER], context); // phong
 			_shaders[DEPTHMAP_SHADER] = new Shader(vShaders[DEPTHMAP_SHADER],
 					fShaders[DEPTHMAP_SHADER], context); // depth map
 			_shaders[OLD_SHADER] = new Shader(vShaders[OLD_SHADER],
@@ -133,19 +134,18 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 		// arrange scene
 
-		shader = _shaders[OLD_SHADER];
 		texture = new Texture(context, R.drawable.back64);
 
 		// сфера
-		model = new Model3D(context, "icosphere.obj", shader, texture);
+		model = new Model3D(context, "icosphere.obj", texture);
 		HashMap<Model3D, Coords> h2 = new HashMap<Model3D, Coords>();
 		Coords c2 = new Coords(0, 0, 0);
 		h2.put(model, c2);
 		sphere = new Ball(new Coords(0, 0, 0), h2, new Coords(-2, 1, 0),
-				new Coords(2, -1, 0.2f), 0.3f);
+				new Coords(2, -1, 0), 0.3f);
 
 		// плоскость
-		model = new Model3D(context, "plane.obj", shader, texture);
+		model = new Model3D(context, "plane.obj", texture);
 		HashMap<Model3D, Coords> h1 = new HashMap<Model3D, Coords>();
 		Coords c1 = new Coords(0, 0, 0);
 		h1.put(model, c1);
@@ -324,6 +324,8 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 			Model3D m = it.next();
 			Coords c = o.getModels().get(m);
 
+			// Log.d(TAG, Float.toString(c.getYAngle()));
+
 			// переносим и поворачиваем матрицу модели в соответствии с
 			// координатами этой 3D модели в пространстве
 
@@ -378,8 +380,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 						light[0], light[1], light[2]);
 			}
 			// рисуем
-			m.setShader(_shaders[_program]);
-			m.draw();
+			m.draw(_shaders[_program]);
 		}
 	}
 
@@ -401,7 +402,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	 */
 	private void renderScene() {
 
-		int _program = PHONG_SHADER;
+		int _program = SIMPLE_SHADOW_CONSTANT_BIAS_SHADER;
 
 		// bind default framebuffer
 		GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
@@ -413,8 +414,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 		// pass in texture where depth map is stored
 		GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, renderTextureId[0]);
-		GLES20.glUniform1i(
-				GLES20.glGetUniformLocation(_program, "u_shadowTexture"), 0);
+		GLES20.glUniform1i(_shaders[_program].getShadowTextureHandle(), 0);
 
 		// DRAW ALL THE OBJECTS
 		drawAllObjects(_program, false);
@@ -430,7 +430,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	 */
 	void drawAllObjects(int _program, boolean shadowMap) {
 		drawGameObject(plane, shadowMap, _program);
-		sphere.countCoords();
+		//sphere.countCoords();
 		drawGameObject(sphere, shadowMap, _program);
 	}
 

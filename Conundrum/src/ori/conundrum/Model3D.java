@@ -14,8 +14,6 @@ public class Model3D {
 	/** Координатная сетка */
 	Mesh mesh;
 
-	/** Шейдер */
-	private Shader shader;
 	/** Текстура */
 	private Texture texture;
 
@@ -56,18 +54,20 @@ public class Model3D {
 	 * @param texture
 	 *            текстура
 	 */
-	public Model3D(Context context, String file, Shader shader, Texture texture) {
+	public Model3D(Context context, String file, Texture texture) {
 
 		mesh = new Mesh(context, file);
 
-		this.shader = shader;
 		this.texture = texture;
 	}
 
 	/**
 	 * Связывает буфер координат вершин vertices с атрибутами в шейдере.
+	 * 
+	 * @param shader
+	 *            шейдер
 	 */
-	public void linkVertexBuffer() {
+	public void linkVertexBuffer(Shader shader) {
 
 		// устанавливаем активную программу
 		GLES20.glUseProgram(shader.getProgramHandle());
@@ -106,34 +106,32 @@ public class Model3D {
 	}
 
 	/**
-	 * Отрисовать модель.
+	 * Отрисовать модель определенным шейдером
+	 * 
+	 * @param shader
+	 *            шейдер
 	 */
-	public void draw() {
+	public void draw(Shader shader) {
 
-		linkVertexBuffer();
-		shader.linkTexture(texture);
+		linkVertexBuffer(shader);
+		// shader.linkTexture(texture);
 
 		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mesh.size() / SIZE);
-		unlinkVertexBuffer();
+		unlinkVertexBuffer(shader);
 	}
 
 	/**
 	 * Удаляет связи между буфером координат вершин vertices и атрибутами в
 	 * шейдере
+	 * 
+	 * @param shader
+	 *            шейдер
 	 */
-	private void unlinkVertexBuffer() {
+	private void unlinkVertexBuffer(Shader shader) {
 		GLES20.glDisableVertexAttribArray(shader.getPositionHandle());
 		GLES20.glDisableVertexAttribArray(shader.getNormalHandle());
 		GLES20.glDisableVertexAttribArray(shader.getTextureHandle());
 		GLES20.glDisableVertexAttribArray(shader.getColorHandle());
-	}
-
-	/**
-	 * @param shader
-	 *            шейдер
-	 */
-	public void setShader(Shader shader) {
-		this.shader = shader;
 	}
 
 	/**

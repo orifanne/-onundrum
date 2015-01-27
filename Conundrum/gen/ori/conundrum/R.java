@@ -40,12 +40,11 @@ public final class R {
     public static final class raw {
         public static final int depth_ps=0x7f040000;
         public static final int depth_vs=0x7f040001;
-        public static final int gouraud_ps=0x7f040002;
-        public static final int gouraud_vs=0x7f040003;
-        public static final int old_fs=0x7f040004;
-        public static final int old_vs=0x7f040005;
-        public static final int phong_ps=0x7f040006;
-        public static final int phong_vs=0x7f040007;
+        public static final int old_fs=0x7f040002;
+        public static final int old_vs=0x7f040003;
+        public static final int simple_shadow=0x7f040004;
+        public static final int simple_shadow_constant_bias_ps=0x7f040005;
+        public static final int simple_shadow_dynamic_bias_ps=0x7f040006;
     }
     public static final class string {
         public static final int action_settings=0x7f060002;
