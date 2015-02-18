@@ -21,9 +21,6 @@ void main() {
 	float normalizedDistance = v_Position.z / v_Position.w;
 	normalizedDistance = (normalizedDistance + 1.0) / 2.0;
 
-	// bias
-	normalizedDistance += 0.0005;
-
 	// pack value into 32-bit RGBA texture
 	gl_FragColor = pack(normalizedDistance);
 

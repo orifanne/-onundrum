@@ -1,5 +1,6 @@
 package ori.conundrum;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -82,8 +83,18 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 	Context context;
 
+	/** Cтационарные игровые объекты */
+	ArrayList<GameObject> objects;
+	/** Мобильные игровые объекты */
+	ArrayList<FlexibleGameObject> flexibleObjects;
+	/** Набор матриц проекции теней */
+	ArrayList<float[]> lMVP;
+
 	public MyClassRenderer(Context context) {
 		this.context = context;
+
+		objects = new ArrayList<GameObject>();
+		flexibleObjects = new ArrayList<FlexibleGameObject>();
 
 		// setup all the shaders
 		vShaders = new int[4];
@@ -138,18 +149,27 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 
 		// сфера
 		model = new Model3D(context, "icosphere.obj", texture);
-		HashMap<Model3D, Coords> h2 = new HashMap<Model3D, Coords>();
-		Coords c2 = new Coords(0, 0, 0);
-		h2.put(model, c2);
-		sphere = new Ball(new Coords(0, 0, 0), h2, new Coords(-2, 1, 0),
+		sphere = new Ball(new Coords(0, 0, 0), model, new Coords(-2, 1, 0),
 				new Coords(2, -1, 0), 0.3f);
 
 		// плоскость
 		model = new Model3D(context, "plane.obj", texture);
-		HashMap<Model3D, Coords> h1 = new HashMap<Model3D, Coords>();
-		Coords c1 = new Coords(0, 0, 0);
-		h1.put(model, c1);
-		plane = new GameObject(new Coords(0, 0, 0f), h1);
+		plane = new GameObject(new Coords(0, 0, 0f), model);
+		
+		
+		model = new Model3D(context, "cube.obj", texture);
+		GameObject cube = new GameObject(new Coords(2f, 2f, 0f), model);
+		
+		model = new Model3D(context, "icosphere.obj", texture);
+		Ball sphere1 = new Ball(new Coords(-1, -1, 0), model, new Coords(-2, 1, 0),
+				new Coords(2, -1, 0), 0.3f);
+		
+		objects.add(plane);
+		objects.add(sphere1);
+		objects.add(cube);
+		
+		flexibleObjects.add(sphere);
+					
 	}
 
 	@Override
@@ -317,71 +337,63 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	 * @param _program
 	 *            индекс шейдера в массиве _shaders
 	 */
-	private void drawGameObject(GameObject o, boolean shadowMap, int _program) {
-		// цикл по всем 3D моделям этого игрового объекта
-		Iterator<Model3D> it = o.getModels().keySet().iterator();
-		while (it.hasNext()) {
-			Model3D m = it.next();
-			Coords c = o.getModels().get(m);
+	private void drawGameObject(GameObject o, boolean shadowMap, int _program,
+			int i) {
 
-			// Log.d(TAG, Float.toString(c.getYAngle()));
+		Model3D m = o.getModel();
 
-			// переносим и поворачиваем матрицу модели в соответствии с
-			// координатами этой 3D модели в пространстве
+		// переносим и поворачиваем матрицу модели в соответствии с
+		// координатами этого объекта в пространстве
 
-			Matrix.setIdentityM(mModelMatrix, 0);
+		Matrix.setIdentityM(mModelMatrix, 0);
 
-			Matrix.translateM(mModelMatrix, 0, o.getCoords().getX(), o
-					.getCoords().getY(), c.getZ());
-			Matrix.rotateM(mModelMatrix, 0, o.getCoords().getXAngle(), 1, 0, 0);
-			Matrix.rotateM(mModelMatrix, 0, o.getCoords().getYAngle(), 0, 1, 0);
+		Matrix.translateM(mModelMatrix, 0, o.getCoords().getX(), o.getCoords()
+				.getY(), o.getCoords().getZ());
+		Matrix.rotateM(mModelMatrix, 0, o.getCoords().getXAngle(), 1, 0, 0);
+		Matrix.rotateM(mModelMatrix, 0, o.getCoords().getYAngle(), 0, 1, 0);
 
-			Matrix.translateM(mModelMatrix, 0, c.getX(), c.getY(), c.getZ());
-			Matrix.rotateM(mModelMatrix, 0, c.getXAngle(), 1, 0, 0);
-			Matrix.rotateM(mModelMatrix, 0, c.getYAngle(), 0, 1, 0);
+		// делаем матрицу модели-вида-проекции для отрисовки теней
+		if (shadowMap) {
+			// View matrix * Model matrix value is stored
+			Matrix.multiplyMM(lMVPMatrix, 0, lViewMatrix, 0, mModelMatrix, 0);
+			// Model * view * projection matrix stored and copied for use at
+			// rendering from camera point of view
+			Matrix.multiplyMM(lMVPMatrix, 0, lProjectionMatrix, 0, lMVPMatrix,
+					0);
+			lMVP.add(lMVPMatrix.clone());
+			// Pass in the combined matrix.
+			GLES20.glUniformMatrix4fv(_shaders[_program].getLightMVPMatrixHandle(),
+					1, false, lMVPMatrix, 0);
+			
+			// рисуем
+			// !!! 
+			//m.draw(_shaders[_program]);
+		}
+		// или для финального рендера и шлем ее в шейдер
+		else {
+			Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
+			Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mMVPMatrix,
+					0);
+			GLES20.glUniformMatrix4fv(_shaders[_program].getMVPMatrixHandle(),
+					1, false, mMVPMatrix, 0);
 
-			// делаем матрицу модели-вида-проекции для отрисовки теней
-			if (shadowMap) {
-				viewFromLight();
-				// View matrix * Model matrix value is stored
-				Matrix.multiplyMM(lMVPMatrix, 0, lViewMatrix, 0, mModelMatrix,
-						0);
-				// Model * view * projection matrix stored and copied for use at
-				// rendering from camera point of view
-				Matrix.multiplyMM(lMVPMatrix, 0, lProjectionMatrix, 0,
-						lMVPMatrix, 0);
-				// Pass in the combined matrix.
-				GLES20.glUniformMatrix4fv(
-						_shaders[_program].getMVPMatrixHandle(), 1, false,
-						lMVPMatrix, 0);
-			}
-			// или для финального рендера и шлем ее в шейдер
-			else {
-				viewFromCamera(_program);
-				Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix,
-						0);
-				Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0,
-						mMVPMatrix, 0);
-				GLES20.glUniformMatrix4fv(
-						_shaders[_program].getMVPMatrixHandle(), 1, false,
-						mMVPMatrix, 0);
+			// send the shadow projection matrix
+			GLES20.glUniformMatrix4fv(
+				_shaders[_program].getShadowProjMatrixHandle(), 1, false,
+					lMVP.get(i), 0);
 
-				// send the shadow projection matrix
-				GLES20.glUniformMatrix4fv(
-						_shaders[_program].getShodowProjMatrixHandle(), 1,
-						false, lMVPMatrix, 0);
-
-				// и скорректировать и передать координаты источника света
-				float[] light = { lightPos[0], lightPos[1], lightPos[2], 0 };
-				float[] inverted = new float[16];
-				Matrix.invertM(inverted, 0, mModelMatrix, 0);
-				Matrix.multiplyMV(light, 0, inverted, 0, light, 0);
-				GLES20.glUniform3f(_shaders[_program].getLightPositionHandle(),
-						light[0], light[1], light[2]);
-			}
+			// и скорректировать и передать координаты источника света
+			float[] light = { lightPos[0], lightPos[1], lightPos[2], 0 };
+			float[] inverted = new float[16];
+			Matrix.invertM(inverted, 0, mModelMatrix, 0);
+			Matrix.multiplyMV(light, 0, inverted, 0, light, 0);
+			GLES20.glUniform3f(_shaders[_program].getLightPositionHandle(),
+					light[0], light[1], light[2]);
+			
 			// рисуем
 			m.draw(_shaders[_program]);
 		}
+
 	}
 
 	/**
@@ -403,6 +415,7 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	private void renderScene() {
 
 		int _program = SIMPLE_SHADOW_CONSTANT_BIAS_SHADER;
+		//int _program = OLD_SHADER;
 
 		// bind default framebuffer
 		GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
@@ -429,9 +442,32 @@ public class MyClassRenderer implements GLSurfaceView.Renderer {
 	 *            is shadow mapping
 	 */
 	void drawAllObjects(int _program, boolean shadowMap) {
-		drawGameObject(plane, shadowMap, _program);
-		//sphere.countCoords();
-		drawGameObject(sphere, shadowMap, _program);
+		if (shadowMap) {
+			for (int i = 0; i < flexibleObjects.size(); i++)
+				flexibleObjects.get(i).countCoords();
+			lMVP = new ArrayList<float[]>();
+			viewFromLight();
+			int i;
+			for (i = 0; i < objects.size(); i++) {
+				drawGameObject(objects.get(i), shadowMap, _program, i);
+			}
+			for (int j = 0; j < flexibleObjects.size(); j++) {
+				drawGameObject(flexibleObjects.get(j), shadowMap, _program, i + j);
+			}
+		} else {
+			viewFromCamera(_program);
+			int i;
+			for (i = 0; i < objects.size(); i++) {
+				drawGameObject(objects.get(i), shadowMap, _program, i);
+			}
+			//drawGameObject(objects.get(1), shadowMap, _program, 1);
+			//drawGameObject(objects.get(2), shadowMap, _program, 2);
+			//drawGameObject(objects.get(0), shadowMap, _program, 0);
+			for (int j = 0; j < flexibleObjects.size(); j++) {
+				drawGameObject(flexibleObjects.get(j), shadowMap, _program, i + j);
+			}
+		}
+		
 	}
 
 }

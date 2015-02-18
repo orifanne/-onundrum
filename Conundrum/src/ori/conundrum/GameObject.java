@@ -1,9 +1,8 @@
 package ori.conundrum;
 
-import java.util.HashMap;
-
 /**
- * Представляет игровой объект - единицу, имеющую набор 3d-моделей и координаты.
+ * Представляет абстракцию игрового объекта - единицы, имеющей набор 3d-моделей
+ * и координаты.
  * 
  * @author orifanne
  * 
@@ -13,19 +12,19 @@ public class GameObject {
 	/** Координаты центра */
 	protected Coords coords;
 
-	/** Набор 3d-моделей с координатами */
-	private HashMap<Model3D, Coords> models;
+	/** 3d-модель */
+	private Model3D model;
 
 	/**
 	 * @param coords
 	 *            координаты центра
-	 * @param models
-	 *            набор 3d-моделей с координатами
+	 * @param model
+	 *            3d-модель
 	 */
-	public GameObject(Coords coords, HashMap<Model3D, Coords> models) {
+	public GameObject(Coords coords, Model3D model) {
 		super();
 		this.coords = coords;
-		this.models = models;
+		this.model = model;
 	}
 
 	/**
@@ -44,10 +43,10 @@ public class GameObject {
 	}
 
 	/**
-	 * @return набор 3d-моделей с координатами
+	 * @return 3d-модель
 	 */
-	public HashMap<Model3D, Coords> getModels() {
-		return models;
+	public Model3D getModel() {
+		return model;
 	}
 
 }

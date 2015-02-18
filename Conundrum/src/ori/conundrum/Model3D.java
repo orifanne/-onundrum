@@ -117,7 +117,9 @@ public class Model3D {
 		// shader.linkTexture(texture);
 
 		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mesh.size() / SIZE);
-		unlinkVertexBuffer(shader);
+		
+		// was it really important?
+		//unlinkVertexBuffer(shader);
 	}
 
 	/**
@@ -141,4 +143,5 @@ public class Model3D {
 	public void setTexture(Texture texture) {
 		this.texture = texture;
 	}
+
 }

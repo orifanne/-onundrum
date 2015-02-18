@@ -1,6 +1,6 @@
 package ori.conundrum;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  * Металлический шарик.
@@ -9,7 +9,7 @@ import java.util.HashMap;
  * 
  */
 
-public class Ball extends GameObject {
+public class Ball extends FlexibleGameObject {
 
 	/** Проекция скорости на ось X */
 	private float vx = 0;
@@ -20,7 +20,7 @@ public class Ball extends GameObject {
 	/** Радиус шара */
 	private float rad = 0.1f;
 	/** Коэффициент трения качения */
-	private float f = 0.005f;
+	private float f = 0.001f;
 
 	/** Граница объемной области передвижения слева снизу дальняя */
 	private Coords boundLeftDownFar;
@@ -30,8 +30,8 @@ public class Ball extends GameObject {
 	/**
 	 * @param coords
 	 *            координаты центра
-	 * @param models
-	 *            набор составляющих 3D моделек с координатами
+	 * @param model
+	 *            3D модель
 	 * @param b1
 	 *            граница
 	 * @param b2
@@ -39,9 +39,9 @@ public class Ball extends GameObject {
 	 * @param rad
 	 *            радиус
 	 */
-	Ball(Coords coords, HashMap<Model3D, Coords> models, Coords b1, Coords b2,
+	Ball(Coords coords, Model3D model, Coords b1, Coords b2,
 			float rad) {
-		super(coords, models);
+		super(coords, model);
 		boundLeftDownFar = b1;
 		boundRightUpNear = b2;
 		this.rad = rad;
@@ -61,14 +61,14 @@ public class Ball extends GameObject {
 				.cos(angleX))));
 		float ay = (float) (0.098 * (Math.sin(angleY) - (f / rad * Math
 				.cos(angleY))));
-
+		
 		vx += MainActivity.deltaT * 0.001 * ax;
 		vy += MainActivity.deltaT * 0.001 * ay;
 
-		float deltax = (float) (MainActivity.deltaT * 0.001 * vx + ((MainActivity.deltaT * 0.001)
+		float deltax = (float) (MainActivity.deltaT * 0.001 * (vx) + ((MainActivity.deltaT * 0.001)
 				* (MainActivity.deltaT * 0.001) / 2)
 				* ax);
-		float deltay = (float) (MainActivity.deltaT * 0.001 * vy + ((MainActivity.deltaT * 0.001)
+		float deltay = (float) (MainActivity.deltaT * 0.001 * (vy) + ((MainActivity.deltaT * 0.001)
 				* (MainActivity.deltaT * 0.001) / 2)
 				* ay);
 
@@ -82,11 +82,6 @@ public class Ball extends GameObject {
 		coords.setY(Math.max(
 				Math.min(boundLeftDownFar.getY() - rad, y + deltay),
 				boundRightUpNear.getY()));
-
-		/*
-		 * Log.d("**********", Float.toString(coords.getX()) + " " +
-		 * Float.toString(coords.getY()) + " " + Float.toString(coords.getZ()));
-		 */
 
 		deltax = x - coords.getX();
 		deltay = y - coords.getY();
